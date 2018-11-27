@@ -1,3 +1,12 @@
+//Code by Cyril Royer for TIM UPS INSA
+//Adapted by Tanguy Simon for BE ESPE Multi
+
+
+#include <stm32f1xx_hal.h>
+#include <stm32f1xx_it.h>
+#include "../Inc/CAN_appli.h"
+#include "../Inc/CAN_DATA.h"
+
 // Variables publiques
 extern CAN_HandleTypeDef hcan;
 extern uint32_t u32_RxWatchdog;
