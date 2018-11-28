@@ -19,13 +19,19 @@ static CanRxMsgTypeDef myRxMessage;
 static CAN_FilterConfTypeDef myFilter;
 
 //envoie un message CAN
-static void vCAN_Send_u64(uint32_t __MSG_ID, uint8_t __MSG_LENGTH, uint8_t * __Data, uint32_t __Timeout)
+static bool bCAN_Send_u64(uint32_t __MSG_ID, uint8_t __MSG_LENGTH, uint8_t * __Data, uint32_t __Timeout)
 {
+	if(__MSG_LENGTH > 8)
+	{
+		return 1 ;
+	}
+	
 	hcan.pTxMsg = &myTxMessage;
 	
 	myTxMessage.StdId = __MSG_ID;
 	myTxMessage.ExtId = __MSG_ID<<16;
 	myTxMessage.DLC = __MSG_LENGTH;
+	
 	for(int i, i++, i<__MSG_LENGTH)
 	{
 		myTxMessage.Data[i] = (uint8_t)(__Data[i]);
@@ -33,7 +39,7 @@ static void vCAN_Send_u64(uint32_t __MSG_ID, uint8_t __MSG_LENGTH, uint8_t * __D
 	myTxMessage.IDE = CAN_ID_EXT;
 	myTxMessage.RTR = CAN_RTR_DATA;
 	
-	HAL_CAN_Transmit_IT(&hcan);
+	HAL_CAN_Transmit_IT(&hcan); //transmit function
 }
 
 // Configure un filtre matériel autorisant les messgaes CAN utiles.
@@ -71,7 +77,7 @@ void vCAN_Send<myData>(uint32_t <__myData>)
 }
 
 // Fonction appelée sur interruption de réception de message CAN.
-// Appelle la fonction liée au message reçu.
+// Appelle les fonctions liées aux messages reçus. (parsers)
 void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 {
 	uint16_t __u16_return;
@@ -90,7 +96,7 @@ void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* hcan)
 		{
 			vCAN_On<MyOtherMessage>Received(myRxMessage.Data); //parser de trame CAN, à créer pour chaque message.
 		}
-		//... 
+		//... un pour chaque message que vous voulez lire
 	}
 	HAL_CAN_Receive_IT(hcan, CAN_FIFO1);
 }
