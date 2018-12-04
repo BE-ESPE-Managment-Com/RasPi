@@ -57,7 +57,7 @@ class c_CAN_Message :
 		self.Data = _Data
 
 def CAN_Send_msg(CAN_Msg) :
-	msg = can.Message(arbitration_id=CAN_Msg.ID,CAN_Msg.Data,extended_id=False)
+	msg = can.Message(arbitration_id=CAN_Msg.ID,CAN_Msg.Data,extended_id=True)
 	bus.send(msg)
 	return
 	
