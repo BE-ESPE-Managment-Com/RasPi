@@ -41,20 +41,27 @@ class Module_class :
 
 class Load_Balancer_data_class :
 
-	def __init__(self):
-		self.date = ""
-		self.time = ""
-		self.num = 0 ## charge number
-		self.type = "EDF" ## "EDF" or "MPPT"
-		self.current = 0 ## RMS value (A)
-		self.voltage = 0 ## RMS value (V)
-		self.active_power = 0 ## (W)
-		self.reactive_power = 0 ## (VAR)
-		self.apparent_power = 0 ## (VA)
-		self.power_factor = 0
-		self.freq = 0 ## (Hz)
-		self.temp = 0 ## (°C)
+
+	# INITIALISATION
+
+	
+	def __init__(self, __date = "", __time = "", __num = 0, __type = "", __current = 0, __voltage = 0, __active_power = 0, __reactive_power = 0, __apparent_power = 0, __power_factor = 0, __freq = 0):
+		self.date = __date
+		self.time = __time
+		self.num = __num ## charge number
+		self.type = __type ## "EDF" or "MPPT"
+		self.current = __current ## RMS value (A)
+		self.voltage = __voltage ## RMS value (V)
+		self.active_power = __active_power ## (W)
+		self.reactive_power = __reactive_power ## (VAR)
+		self.apparent_power = __apparent_power ## (VA)
+		self.power_factor = __power_factor
+		self.freq = __freq ## (Hz)
+
 		
+	# METHODES SIMPLES 
+	
+	
 	def Is_date(self, info):
 		self.date = info
 
@@ -87,15 +94,42 @@ class Load_Balancer_data_class :
 		
 	def Is_freq(self, info):
 		self.freq = info
+		
+		
+	# METHODES COMPLEXES
 
-	def Is_temp(self, info):
-		self.temp = info
-
+	
+	def Update_date_time(self, __date, __time)
+	"""Màj de l'objet avec la date et l'heure"""
+		self.date = __date
+		self.time = __time
+	
+	def Update_LB_data_msg_1(self, __num, __type, __current, __voltage, __active_power)
+	"""Màj de l'objet avec les premières valeurs envoyées"""
+		self.num = __num
+		self.type = __type
+		self.current = __current
+		self.voltage = __voltage
+		self.active_power = __active_power
+	
+	def Update_LB_data_msg_2(self, __power_factor, __reactive_power, __apparent_power, __freq)
+	"""Màj de l'objet avec les secondes valeurs envoyées"""
+		self.power_factor = __power_factor
+		self.reactive_power = __reactive_power
+		self.apparent_power = __apparent_power
+		self.freq = __freq
+		
+	
 ## CLASS DEFINITION FOR POWERMETER DATA. Use: store data acquired through the powermeter
 
 class Powermeter_data_class :
 
+	# INITIALISATION
+
 	def __init__(self):
+	"""à completer"""
+
+	# METHODES SIMPLES 
 	"""à completer"""
 	
 	
