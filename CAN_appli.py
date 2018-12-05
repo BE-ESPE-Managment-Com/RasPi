@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO
 import can
 import time
 import os
-
+import numpy
 
 
 
@@ -135,12 +135,13 @@ while(True):
 	Reactive_power -=1
 	if (Reactive_power == 0):
 		Reactive_power = 60
-	Load_Apower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
+	Load_Rpower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
 
 	if(Reactive_power == 14 or Reactive_power == 58):
 		Load_Switch_status[2] = not Load_Switch_status[2]
 		Load_Switch_status[0] = not Load_Switch_status[0]
 	for i in [0:4]:
-		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[i,])
+		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[int8(i),int8(Load_Switch_status[i]),int16(FFFF),int16(Load_Rpower_data[i]),int16(Load_Apower_data[i])])
+		time.sleep(0.5)
 		CAN_Send_msg(myMsg)
 
