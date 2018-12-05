@@ -120,6 +120,27 @@ BMS_MMS_OT_LENGTH =			1
 #test code section
 bus=CAN_init()
 PICAN_LED_init()
-myMsg = c_CAN_Message(MPPT_MMS_STAT_ID,MPPT_MMS_STAT_LENGTH,'FF')
-CAN_Send_msg(myMsg)
+Active_power = 0
+Reactive_power = 100
+Load_Apower_data = [0,0,0,0,0]
+Load_Rpower_data = [60,60,60,60,60]
+Load_Switch_status = [1,0,1,1,0]
+while(True):
+	time.sleep(0.7)
+	Active_power +=1
+	if (Active_power == 50):
+		Active_power = 0
+	Load_Apower_data = [Active_power*2,Active_power+3,Active_power,Active_power/2,Active_power+5]
+	
+	Reactive_power -=1
+	if (Reactive_power == 0):
+		Reactive_power = 60
+	Load_Apower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
+
+	if(Reactive_power == 14 or Reactive_power == 58):
+		Load_Switch_status[2] = not Load_Switch_status[2]
+		Load_Switch_status[0] = not Load_Switch_status[0]
+	for i in [0:4]:
+		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[i,])
+		CAN_Send_msg(myMsg)
 
