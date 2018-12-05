@@ -67,7 +67,10 @@ def CAN_Receive_msg() :
 	return CAN_Msg
 	
 def CAN_RX_Parser(CAN_Msg):
-	if CAN_Msg.ID == BMS_MMS_SOC_ID :
+	if CAN_Msg.ID == LSW_MMS_LDATA1_ID :
+		#place method to fill in load balancer data class
+	if CAN_Msg.ID == LSW_MMS_LDATA2_ID :
+		#place method to fill in load balancer data class
 
 
 			
