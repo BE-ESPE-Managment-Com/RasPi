@@ -3,6 +3,12 @@
 #Project : BE Interdisciplinaire ESPE
 
 ###########################################################################
+## IMPORT						    	 
+###########################################################################
+
+import csv
+
+###########################################################################
 ## CLASSES						    	 
 ###########################################################################
 
@@ -135,42 +141,102 @@ class Powermeter_data_class :
 	
 	
 ###########################################################################
-## GESTION DES FICHIERS						    	 
+## GESTION DES FICHIERS	TEXTE					    	 
 ###########################################################################
 
 
 ## INITIALISATION DES FICHIERS
 
-def Init_file_charge(): """à completer"""
+def Init_file_charge(): 
+	"""à completer"""
 	return
 
 
 ## ECRITURE D'UNE LIGNE DANS UN FICHIER
 
 def W_line_file(nom_fichier, ligne_data):
-	fichier = open(nom_fichier, "a")
-	fichier.write(ligne_data)
+	with open(nom_fichier, "a") as fichier:
+		fichier.write(ligne_data)
 	fichier.close()
 	return
 	
 ## AFFICHAGE D'UNE LIGNE DANS UN FICHIER
 
 def D_line_file(nom_fichier, num_ligne):
-	fichier = open(nom_fichier, "r")
-	print fichier.readline(num_ligne)
+	with open(nom_fichier, "r") as fichier:
+		print fichier.readline(num_ligne)
 	fichier.close()
 	return
 	
 ## AFFICHAGE D'UN FICHIER ENTIER
 
 def D_file(nom_fichier):
-	fichier = open(nom_fichier, "r")
-	print fichier.read()
+	with open(nom_fichier, "r") as fichier:
+		print fichier.read()
+	fichier.close()
+	return
+
+	
+###########################################################################
+## GESTION DES FICHIERS	CSV					    	 
+###########################################################################
+
+
+## INITIALISATION DES FICHIERS
+
+def Init_file_charge_csv(): 
+	"""à completer"""
+	return
+
+
+## ECRITURE D'UNE LIGNE DANS UN FICHIER CSV
+
+def W_line_file_csv(nom_fichier, ligne_data):
+	with open(nom_fichier, "a") as fichier:
+		"""à completer"""
 	fichier.close()
 	return
 	
+## AFFICHAGE D'UNE LIGNE DANS UN FICHIER CSV
+
+def D_line_file_csv(nom_fichier, num_ligne):  
+	with open(nom_fichier, "r") as fichier:
+		reader = csv.reader(fichier)
+		rownum = 0
+		for row in reader:
+			# save header row
+			if rownum == 0:
+				header = row
+			elif (rownum == num_fichier):
+				colnum = 0
+				for col in row:
+					print '%s: %s' % (header[colnum], col)
+					colnum += 1     
+			rownum += 1
+	fichier.close()
+	return
+	
+## AFFICHAGE D'UN FICHIER CSV ENTIER
+
+def D_file_csv(nom_fichier):
+	with open(nom_fichier, "r") as fichier:
+		reader = csv.reader(fichier)
+		rownum = 0
+		for row in reader:
+			# save header row
+			if rownum == 0:
+				header = row
+			else:
+				colnum = 0
+				for col in row:
+					print '%s: %s' % (header[colnum], col)
+					colnum += 1     
+			rownum += 1
+	fichier.close()
+	return
 	
 
+	
 ###########################################################################
 ## GESTION DES DONNEES						    	 
 ###########################################################################
@@ -214,6 +280,7 @@ def D_file(nom_fichier):
 
 ## CALCUL DES VALEURS MPPT CHARGES
 """à completer"""
+
 
 ###########################################################################
 ## NOTES					    	 
