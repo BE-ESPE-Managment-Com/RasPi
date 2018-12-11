@@ -47,7 +47,6 @@ def CAN_init() :
 def CAN_deinit() :
 	print('Bring down CAN0....')
 	os.system("sudo /sbin/ip link set can0 down")
-	return
 	
 class c_CAN_Message :
 	"""Structure of a CAN message"""
@@ -59,7 +58,6 @@ class c_CAN_Message :
 def CAN_Send_msg(CAN_Msg) :
 	msg = can.Message(arbitration_id=CAN_Msg.ID,CAN_Msg.Data,extended_id=True)
 	bus.send(msg)
-	return
 	
 def CAN_Receive_msg() :
 	message = bus.recv()	# Wait until a message is received.
@@ -72,8 +70,21 @@ def CAN_RX_Parser(CAN_Msg):
 	if CAN_Msg.ID == LSW_MMS_LDATA2_ID :
 		#place method to fill in load balancer data class
 
+###########################USER FUNCTONS###########################
+def SW_Loads(LoadNum,LoadPos)
+	#LoadNum in [0:4]
+	#LoadPos in [PV,EDF]
+	if(LoadPos == "EDF"):
+		pos = 0
+	elif(LoadPos == "PV"):
+		pos=1
+	Data = [LoadNum,pos]
+	CAN_Msg = c_CAN_Message(MMS_LSW_SWLOADS_ID,MMS_LSW_SWLOADS_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg)#sending message
+	
+def		
 
-			
+	
 #CAN IDs
 MPPT_MMS_STAT_ID = 		0x4211
 BMS_MMS_STAT_ID = 		0x4311
@@ -112,7 +123,7 @@ MMS_INV_EN_LENGTH =			1
 MMS_LSW_EN_LENGTH =			1
 MMS_MPPT_MAXPWR_LENGTH =		2
 MMS_BMS_SWINV_LENGTH =		1
-MMS_LSW_SWLOADS_LENGTH =		8
+MMS_LSW_SWLOADS_LENGTH =		2
 BMS_MMS_OCH_LENGTH =		1
 BMS_MMS_UCH_LENGTH =		1
 BMS_MMS_OT_LENGTH =			1
