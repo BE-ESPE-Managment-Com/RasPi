@@ -1,13 +1,14 @@
 #File Name : CAN_appli.py
 #Author : Tanguy SIMON
 #Project : BE Interdisciplinaire ESPE
-
+#Abstract : functions to manage the CAN communication
 ############################################################################
 import RPi.GPIO as GPIO
 import can
 import time
 import os
-import numpy
+import numpy as np
+
 
 
 
@@ -42,11 +43,12 @@ def CAN_init() :
 		print('Cannot find PiCAN board.')
 		GPIO.output(led,False)
 		exit()
-	return
+	return bus
 
 def CAN_deinit() :
 	print('Bring down CAN0....')
 	os.system("sudo /sbin/ip link set can0 down")
+	return
 	
 class c_CAN_Message :
 	"""Structure of a CAN message"""
@@ -55,23 +57,50 @@ class c_CAN_Message :
 		self.Length = _Length
 		self.Data = _Data
 
-def CAN_Send_msg(CAN_Msg) :
-	msg = can.Message(arbitration_id=CAN_Msg.ID,CAN_Msg.Data,extended_id=True)
+def CAN_Send_msg(CAN_Msg,bus) :
+	msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
 	bus.send(msg)
+	print('sending CAN msg')
+	return
 	
-def CAN_Receive_msg() :
+def CAN_Receive_msg(bus) :
 	message = bus.recv()	# Wait until a message is received.
 	CAN_Msg = c_CAN_Message(message.arbitration_id, len(message.data), message.data) #creates object of class CAN_Message
 	return CAN_Msg
 	
 def CAN_RX_Parser(CAN_Msg):
-	if CAN_Msg.ID == LSW_MMS_LDATA1_ID :
-		#place method to fill in load balancer data class
-	if CAN_Msg.ID == LSW_MMS_LDATA2_ID :
-		#place method to fill in load balancer data class
+    if (CAN_Msg.ID == LSW_MMS_LDATA1_ID) :
+        if(CAN_Msg.Data[1] == 1):
+        	LoadStatusTable[CAN_Msg.Data[0]] = "PV"
+        else:
+        	LoadStatusTable[CAN_Msg.Data[0]] = "EDF"
+                
+    if("PV" not in LoadStatusTable):
+        AllLoadsDisconnected = True
+            
+    if("EDF" not in LoadStatusTable):
+        AllLoadsConnected = True
+            
+    if (CAN_Msg.ID == LSW_MMS_LDATA2_ID) :
+        LoadSPowerTable[CAN_Msg.Data[0]] = CAN_Msg.Data[3] #apparent power
+    
+    if (CAN_Msg.ID == BMS_MMS_SOC_ID) :
+        u8_BatteryLevel = CAN_Msg.Data
+        
+    if (CAN_Msg.ID == BMS_MMS_PWR_ID) :
+        f32_BatteryPower = CAN_Msg.Data
+        
+    if (CAN_Msg.ID == BMS_MMS_PWR_ID) :
+        f32_BatteryPower = CAN_Msg.Data
+    
+    if (CAN_Msg.ID == MPPT_MMS_STAT_ID) :
+        if(CAN_Msg.Data[0]):
+        	MPPT_Enabled = True
+        else:
+        	MPPT_Enabled = False
 
 ###########################USER FUNCTONS###########################
-def SW_Loads(LoadNum,LoadPos):
+def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
 	#LoadPos in [PV,EDF]
 	if(LoadPos == "EDF"):
@@ -80,17 +109,17 @@ def SW_Loads(LoadNum,LoadPos):
 		pos=1
 	Data = [LoadNum,pos]
 	CAN_Msg = c_CAN_Message(MMS_LSW_SWLOADS_ID,MMS_LSW_SWLOADS_LENGTH,Data) #building CAN object
-	CAN_Send_msg(CAN_Msg)#sending message
+	CAN_Send_msg(CAN_Msg,bus)#sending message
 	
-def Enable_MPPT(bool b_Enable):
+def Enable_MPPT(b_Enable,bus):
 	#send can message to MPPT	
 	if(b_Enable):
-		Data = 1
+		Data = [1]
 	else:
-		Data = 0
+		Data = [0]
 	CAN_Msg = c_CAN_Message(MMS_MPPT_EN_ID,MMS_MPPT_EN_LENGTH,Data) #building CAN object
-	CAN_Send_msg(CAN_Msg)#sending message
-	
+	CAN_Send_msg(CAN_Msg,bus)#sending message
+			
 #CAN IDs
 MPPT_MMS_STAT_ID = 		0x4211
 BMS_MMS_STAT_ID = 		0x4311
@@ -133,7 +162,7 @@ MMS_LSW_SWLOADS_LENGTH =		2
 BMS_MMS_OCH_LENGTH =		1
 BMS_MMS_UCH_LENGTH =		1
 BMS_MMS_OT_LENGTH =			1
-
+"""
 #test code section
 bus=CAN_init()
 PICAN_LED_init()
@@ -142,6 +171,7 @@ Reactive_power = 100
 Load_Apower_data = [0,0,0,0,0]
 Load_Rpower_data = [60,60,60,60,60]
 Load_Switch_status = [1,0,1,1,0]
+LSW_MMS_LDATA1_LENGTH = 5
 while(True):
 	time.sleep(0.7)
 	Active_power +=1
@@ -152,13 +182,14 @@ while(True):
 	Reactive_power -=1
 	if (Reactive_power == 0):
 		Reactive_power = 60
-	Load_Rpower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
+	Load_Apower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
 
 	if(Reactive_power == 14 or Reactive_power == 58):
 		Load_Switch_status[2] = not Load_Switch_status[2]
 		Load_Switch_status[0] = not Load_Switch_status[0]
-	for i in [0:4]:
-		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[int8(i),int8(Load_Switch_status[i]),int16(FFFF),int16(Load_Rpower_data[i]),int16(Load_Apower_data[i])])
+	for i in range(0,4):
+		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[np.uint8(i),np.uint8(Load_Switch_status[i]),np.uint16('10'),np.uint16(Load_Rpower_data[i]),np.uint16(Load_Apower_data[i])])
 		time.sleep(0.5)
 		CAN_Send_msg(myMsg)
 
+"""
