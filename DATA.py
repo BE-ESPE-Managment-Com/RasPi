@@ -136,7 +136,7 @@ class Powermeter_data_class:
 
 
 ###########################################################################
-## GESTION DES FICHIERS	TEXTE					    	 
+## GESTION DES FICHIERS TEXTE
 ###########################################################################
 
 
@@ -175,7 +175,7 @@ def D_file(nom_fichier):
 
 
 ###########################################################################
-## GESTION DES FICHIERS	CSV					    	 
+## GESTION DES FICHIERS	CSV
 ###########################################################################
 
 
@@ -191,6 +191,23 @@ def Init_file_charge_csv():
 def W_line_file_csv(nom_fichier, ligne_data):
     with open(nom_fichier, "a") as fichier:
         """à completer"""
+    fichier.close()
+    return
+
+
+## RECUPERATION D'UNE LIGNE D'UN FICHIER CSV LOAD VERS UN OBJET LOAD
+
+def G_line_file_csv(nom_fichier, num_ligne):
+    with open(nom_fichier, "r") as fichier:
+        reader = csv.reader(fichier)
+        rownum = 0
+        for row in reader:
+            if (rownum == num_ligne):
+                colnum = 0
+                for col in row:
+                    """à compléter"""
+                    colnum += 1
+            rownum += 1
     fichier.close()
     return
 
