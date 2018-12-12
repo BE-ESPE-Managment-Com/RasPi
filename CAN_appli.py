@@ -71,7 +71,7 @@ def CAN_RX_Parser(CAN_Msg):
 		#place method to fill in load balancer data class
 
 ###########################USER FUNCTONS###########################
-def SW_Loads(LoadNum,LoadPos)
+def SW_Loads(LoadNum,LoadPos):
 	#LoadNum in [0:4]
 	#LoadPos in [PV,EDF]
 	if(LoadPos == "EDF"):
@@ -82,8 +82,14 @@ def SW_Loads(LoadNum,LoadPos)
 	CAN_Msg = c_CAN_Message(MMS_LSW_SWLOADS_ID,MMS_LSW_SWLOADS_LENGTH,Data) #building CAN object
 	CAN_Send_msg(CAN_Msg)#sending message
 	
-def		
-
+def Enable_MPPT(bool b_Enable):
+	#send can message to MPPT	
+	if(b_Enable):
+		Data = 1
+	else:
+		Data = 0
+	CAN_Msg = c_CAN_Message(MMS_MPPT_EN_ID,MMS_MPPT_EN_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg)#sending message
 	
 #CAN IDs
 MPPT_MMS_STAT_ID = 		0x4211

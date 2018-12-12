@@ -46,9 +46,6 @@ def Disonnect_Load():
 	LoadNum = u8_Load_Choice_Algorithm(abs(f32_MPPT_Power - f32_LSW_Power))
 	#send CAN message to LSW to disconnect optimal load
 	SW_Loads(LoadNum,"EDF")
-	
-def Enable_MPPT(bool b_Enable):
-	#send can message to MPPT
 
 def MainAlgorithm():
 	print("Initialising system...")
