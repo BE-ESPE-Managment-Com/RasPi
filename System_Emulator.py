@@ -41,19 +41,35 @@ while(True):
      for i in range(0,4):
           f32_LSW_Power += (Load_Spower_data[i]*Load_Switch_status[i]) #add the power consumed by connected loads
      
+     #Battery power
+     f32_BatteryPower = f32_MPPT_Power-f32_LSW_Power
+     
      #Battery level integration
-     u8_BatteryLevel += 0.001*(f32_MPPT_Power-f32_LSW_Power)
-        
+     u8_BatteryLevel += 0.001*f32_BatteryPower
+     
+     #send battery power
+     myMsg = cn.c_CAN_Message(cn.BMS_MMS_PWR_ID,cn.BMS_MMS_PWR_LENGTH,[np.uint16(f32_BatteryPower*10)])
+	time.sleep(0.2)#5Hz
+	cn.CAN_Send_msg(myMsg)
+	
+     #send battery level
+     myMsg = cn.c_CAN_Message(cn.BMS_MMS_SOC_ID,cn.BMS_MMS_SOC_LENGTH,[np.uint8(u8_BatteryLevel)])
+	time.sleep(0.2)#5Hz
+	cn.CAN_Send_msg(myMsg)
+     
+     #send load Apparent power   
 	for i in range(0,4):#send load Apparent power
 		myMsg = cn.c_CAN_Message(cn.LSW_MMS_LDATA2_ID,cn.LSW_MMS_LDATA2_LENGTH,[np.uint8(i),np.uint8(0),np.uint16(0),np.uint16(Load_Spower_data[i]),np.uint16(0)])
 		time.sleep(0.2)#5Hz
 		cn.CAN_Send_msg(myMsg)
-		
+	
+	#send load status	
 	for i in range(0,4):#send load status
 		myMsg = cn.c_CAN_Message(cn.LSW_MMS_LDATA2_ID,cn.LSW_MMS_LDATA2_LENGTH,[np.uint8(i),np.uint16(Load_Switch_status[i]),np.uint8(0),np.uint16(0),np.uint16(0)])
 		time.sleep(0.2)#5Hz
 		cn.CAN_Send_msg(myMsg)
 	
+	#send send MPPT status
 	myMsg = cn.c_CAN_Message(cn.MPPT_MMS_STAT_ID,cn.MPPT_MMS_STAT_LENGTH,[np.uint8(MPPT_Enabled)])
 	time.sleep(0.2)#5Hz
 	cn.CAN_Send_msg(myMsg)

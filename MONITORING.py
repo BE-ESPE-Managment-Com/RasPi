@@ -38,12 +38,12 @@ def b_InitSystem():
     #insert code
     return err,bus
 
-def u8_Load_Choice_Algorithm(f32_power_delta):
+def u8_Load_Choice_Algorithm(ConnectTo, f32_power_delta):
 	#get load power data
 	Matching_load_power_diffence = 1000
 	for i in range(0,4):
-		Load_power_difference = LoadSPowerTable[i]-f32_power_delta
-		if(Load_power_difference < Matching_load_power_diffence):
+		Load_power_difference = abs(LoadSPowerTable[i]-f32_power_delta)
+		if(Load_power_difference < Matching_load_power_diffence and LoadStatusTable[i] != ConnectTo):
 			Matching_load_num = i
 			Matching_load_power_diffence = Load_power_difference
 			
@@ -51,13 +51,13 @@ def u8_Load_Choice_Algorithm(f32_power_delta):
 			
 def Connect_Load():
 	#Load choice Algorithm
-	LoadNum = u8_Load_Choice_Algorithm(abs(f32_MPPT_Power - f32_LSW_Power))
+	LoadNum = u8_Load_Choice_Algorithm("PV",abs(f32_MPPT_Power - f32_LSW_Power))
 	#send CAN message to LSW to connect optimal load
 	SW_Loads(LoadNum,"PV",bus)
 	
 def Disonnect_Load():
 	#Load choice Algorithm
-	LoadNum = u8_Load_Choice_Algorithm(abs(f32_MPPT_Power - f32_LSW_Power))
+	LoadNum = u8_Load_Choice_Algorithm("EDF",abs(f32_MPPT_Power - f32_LSW_Power))
 	#send CAN message to LSW to disconnect optimal load
 	SW_Loads(LoadNum,"EDF",bus)
 
