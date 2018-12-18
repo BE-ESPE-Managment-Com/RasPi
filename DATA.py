@@ -150,7 +150,7 @@ def Init_file_charge():
 ## ECRITURE D'UNE LIGNE DANS UN FICHIER
 
 def W_line_file(nom_fichier, ligne_data):
-    with open(nom_fichier, "a") as fichier:
+    with open(nom_fichier, 'a') as fichier:
         fichier.write(ligne_data)
     fichier.close()
     return
@@ -159,7 +159,7 @@ def W_line_file(nom_fichier, ligne_data):
 ## AFFICHAGE D'UNE LIGNE DANS UN FICHIER
 
 def D_line_file(nom_fichier, num_ligne):
-    with open(nom_fichier, "r") as fichier:
+    with open(nom_fichier, 'r') as fichier:
         print(fichier.readline(num_ligne))
     fichier.close()
     return
@@ -168,7 +168,7 @@ def D_line_file(nom_fichier, num_ligne):
 ## AFFICHAGE D'UN FICHIER ENTIER
 
 def D_file(nom_fichier):
-    with open(nom_fichier, "r") as fichier:
+    with open(nom_fichier, 'r') as fichier:
         print(fichier.read())
     fichier.close()
     return
@@ -181,16 +181,21 @@ def D_file(nom_fichier):
 
 ## INITIALISATION DES FICHIERS
 
-def Init_file_charge_csv():
-    """à completer"""
+def Init_file_charge_csv(nom_fichier):
+    with open(nom_fichier, 'w') as fichier:
+        fieldnames = ['date','time','num','type','current','voltage','active_power','reactive_power','apparent_power','power_factor','freq']
+        writer = csv.DictWriter(fichier, fieldnames = fieldnames, delimiter = ';')
+        writer.writeheader()
     return
 
 
 ## ECRITURE D'UNE LIGNE DANS UN FICHIER CSV
+# ligne_data format: ['x1', 'x2', 'x3', ..., 'x11']
 
 def W_line_file_csv(nom_fichier, ligne_data):
-    with open(nom_fichier, "a") as fichier:
-        """à completer"""
+    with open(nom_fichier, 'a') as fichier:
+        writer = csv.writer(fichier, delimiter=';')
+        writer.writerow(ligne_data)
     fichier.close()
     return
 
@@ -198,14 +203,14 @@ def W_line_file_csv(nom_fichier, ligne_data):
 ## RECUPERATION D'UNE LIGNE D'UN FICHIER CSV LOAD VERS UN OBJET LOAD
 
 def G_line_file_csv(nom_fichier, num_ligne):
-    with open(nom_fichier, "r") as fichier:
+    with open(nom_fichier, 'r') as fichier:
         reader = csv.reader(fichier)
         rownum = 0
         for row in reader:
             if (rownum == num_ligne):
                 colnum = 0
                 for col in row:
-                    """à compléter"""
+                    """à completer : case ??"""
                     colnum += 1
             rownum += 1
     fichier.close()
@@ -215,7 +220,7 @@ def G_line_file_csv(nom_fichier, num_ligne):
 ## AFFICHAGE D'UNE LIGNE DANS UN FICHIER CSV
 
 def D_line_file_csv(nom_fichier, num_ligne):
-    with open(nom_fichier, "r") as fichier:
+    with open(nom_fichier, 'r') as fichier:
         reader = csv.reader(fichier)
         rownum = 0
         for row in reader:
@@ -235,7 +240,7 @@ def D_line_file_csv(nom_fichier, num_ligne):
 ## AFFICHAGE D'UN FICHIER CSV ENTIER
 
 def D_file_csv(nom_fichier):
-    with open(nom_fichier, "r") as fichier:
+    with open(nom_fichier, 'r') as fichier:
         reader = csv.reader(fichier)
         rownum = 0
         for row in reader:
@@ -358,4 +363,8 @@ class LSW_Module (Module_class) :
 ###########################################################################
 
 #D_line_file_csv('test.csv', 2)
+
 #D_file_csv('test.csv')
+
+#Init_file_charge_csv('test1.csv')
+#W_line_file_csv('test1.csv',['x1', 'x2'])
