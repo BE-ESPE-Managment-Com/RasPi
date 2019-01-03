@@ -8,7 +8,8 @@ import can
 import time
 import os
 import numpy as np
-
+import queue
+from threading import Thread
 
 
 
@@ -31,6 +32,12 @@ def PICAN_LED_init() :
 	GPIO.output(led,True)
 	return
 	
+# CAN receive thread
+def can_rx_task():
+	while True:
+		message = bus.recv()
+		q.put(message)			# Put message into queue
+			
 def CAN_init() :
 	print('Bring up CAN0....')
 	# Bring up can0 interface at 500kbps
@@ -43,7 +50,12 @@ def CAN_init() :
 		print('Cannot find PiCAN board.')
 		GPIO.output(led,False)
 		exit()
-	return bus
+	
+	q = queue.Queue()	
+	t = Thread(target = can_rx_task)	# Start receive thread
+	t.start()
+
+	return bus, q
 
 def CAN_deinit() :
 	print('Bring down CAN0....')
@@ -63,8 +75,8 @@ def CAN_Send_msg(CAN_Msg,bus) :
 	print('sending CAN msg')
 	return
 	
-def CAN_Receive_msg(bus) :
-	message = bus.recv()	# Wait until a message is received.
+def CAN_Receive_msg(bus,q) :
+	message = q.get()
 	CAN_Msg = c_CAN_Message(message.arbitration_id, len(message.data), message.data) #creates object of class CAN_Message
 	return CAN_Msg
 	

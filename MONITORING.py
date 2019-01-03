@@ -34,9 +34,9 @@ bus = 0
 def b_InitSystem():
     err = False
     cn.PICAN_LED_init()
-    bus = cn.CAN_init()
+    bus,q = cn.CAN_init()
     #insert code
-    return err,bus
+    return err,bus,q
 
 def u8_Load_Choice_Algorithm(ConnectTo, f32_power_delta):
 	#get load power data
@@ -63,24 +63,25 @@ def Disonnect_Load():
 
 def MainAlgorithm():
     print("Initialising system...")
-    InitErr,bus = b_InitSystem()
+    InitErr,bus,CAN_msg_queue = b_InitSystem()
     if(InitErr):
         print("Initialisation error. Trying again...")
         time.sleep(1)#wait 1s
         print("Initialising system...")
-        InitErr = b_InitSystem()
+        InitErr,bus,CAN_msg_queue = b_InitSystem()
         if(InitErr):
             print("Second initialisation error. System shut down...")
             raise "Initialisation error" #terminate program
     print("Initialisation done.")
     counter = 0
     while(True):
-        time.sleep(0.001)#1ms
+        time.sleep(0.0005)#0.5ms
         counter += 1
         #check state of watchdogs (check that all modules are sending data on the CAN bus, i.e. the data is fresh and relevant)
-        cn.CAN_RX_Parser(cn.CAN_Receive_msg(bus)) #read CAN messages
+        if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
+        	  cn.CAN_RX_Parser(cn.CAN_Receive_msg(bus,CAN_msg_queue)) #read CAN message and parse it
         
-        if(counter == 1000):#1s
+        if(counter == 2000):#1s
             counter = 0
             #Main Algorithm
             #test battery level
@@ -116,7 +117,8 @@ def MainAlgorithm():
                             print("Disconnecting load")
                             Disconnect_Load()
                         else:
-                            pass #if MPPT power > 0, all loads disconnected and battery still discharging there can be a problem
+                            pass #if MPPT power > 0, all loads disconnected and battery still discharging there can be a problem.
+                            #to be added when the rest is working for additionnal security
 
             elif(s_Battery_State == "OK"):
                 #code for battery ok
