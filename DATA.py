@@ -1,5 +1,5 @@
 # File Name : DATA.py
-# Author : Tanguy SIMON / Amélie MEYER
+# Author : Amélie MEYER / Tanguy SIMON
 # Project : BE Interdisciplinaire ESPE
 
 ###########################################################################
@@ -7,7 +7,6 @@
 ###########################################################################
 
 import csv
-
 
 ###########################################################################
 ## CLASSES
@@ -121,6 +120,8 @@ class Load_Balancer_data_class:
         self.apparent_power = __apparent_power
         self.freq = __freq
 
+    # AFFICHAGE SUR LA CONSOLE DE TOUS LES PARAMETRES
+
     def Display_everything(self):
         """Affichage de l'intégralité de l'objet"""
         print("Date: ",self.date)
@@ -135,11 +136,28 @@ class Load_Balancer_data_class:
         print("Power Factor: ", self.power_factor)
         print("Freq: ", self.freq, "Hz")
 
+    # MISE EN FORMAT LIGNE POUR ECRITURE FICHIER CSV
 
+    def Format_in_line(self):
+        """Mise en format ligne CSV"""
+        line = [str(self.date), str(self.time), str(self.num), str(self.type), str(self.current), str(self.voltage), str(self.active_power), str(self.reactive_power), str(self.apparent_power), str(self.power_factor), str(self.freq)]
+        return line
 
-## CLASS DEFINITION FOR POWERMETER DATA. Use: store data acquired through the powermeter
+## CLASS DEFINITION FOR TOTAL LOADS. Use : store computed data
 
-class Powermeter_data_class:
+class LBtot_data_class:
+
+    # INITIALISATION
+
+    def __init__(self):
+        """à completer"""
+
+        # METHODES SIMPLES
+        """à completer"""
+
+## CLASS DEFINITION FOR MPPT DATA. Use: store data acquired through the MPPT
+
+class MPPT_data_class:
 
     # INITIALISATION
 
@@ -151,15 +169,8 @@ class Powermeter_data_class:
 
 
 ###########################################################################
-## GESTION DES FICHIERS TEXTE
+## GESTION DES FICHIERS - VERSION TEXTE (UNUSED)
 ###########################################################################
-
-
-## INITIALISATION DES FICHIERS
-
-def Init_file_charge():
-    """à completer"""
-    return
 
 
 ## ECRITURE D'UNE LIGNE DANS UN FICHIER
@@ -190,11 +201,11 @@ def D_file(nom_fichier):
 
 
 ###########################################################################
-## GESTION DES FICHIERS	CSV
+## GESTION DES FICHIERS - VERSION CSV (USED)
 ###########################################################################
 
 
-## INITIALISATION DES FICHIERS
+# INITIALISATION DES FICHIERS CHARGES SIMPLE
 
 def Init_file_charge_csv(nom_fichier):
     with open(nom_fichier, 'w') as fichier:
@@ -203,8 +214,26 @@ def Init_file_charge_csv(nom_fichier):
         writer.writeheader()
     return
 
+# INITIALISATION DU FICHIER CHARGES TOTALES
 
-## ECRITURE D'UNE LIGNE DANS UN FICHIER CSV
+def Init_file_chargetot_csv(nom_fichier):
+    with open(nom_fichier, 'w') as fichier:
+        fieldnames = """à compléter"""
+        writer = csv.DictWriter(fichier, fieldnames = fieldnames, delimiter = ';')
+        writer.writeheader()
+    return
+
+# INITIALISATION DU FICHIER DATA MPPT
+
+def Init_file_mppt_csv(nom_fichier):
+    with open(nom_fichier, 'w') as fichier:
+        fieldnames = """à compléter"""
+        writer = csv.DictWriter(fichier, fieldnames = fieldnames, delimiter = ';')
+        writer.writeheader()
+    return
+
+
+# ECRITURE D'UNE LIGNE DANS UN FICHIER CSV
 # ligne_data format: ['x1', 'x2', 'x3', ..., 'x11']
 
 def W_line_file_csv(nom_fichier, ligne_data):
@@ -215,9 +244,9 @@ def W_line_file_csv(nom_fichier, ligne_data):
     return
 
 
-## RECUPERATION D'UNE LIGNE D'UN FICHIER CSV LOAD VERS UN OBJET LOAD
+# RECUPERATION D'UNE LIGNE D'UN FICHIER CSV CHARGE SIMPLE VERS UN OBJET LOAD
 
-def G_line_file_csv(nom_fichier, num_ligne):
+def G_line_file_charge_csv(nom_fichier, num_ligne):
     with open(nom_fichier, 'r') as fichier:
         reader = csv.reader(fichier, delimiter=';')
         rownum = 0
@@ -255,8 +284,14 @@ def G_line_file_csv(nom_fichier, num_ligne):
     fichier.close()
     return info_charge
 
+# RECUPERATION D'UNE LIGNE D'UN FICHIER CSV CHARGE TOTALE VERS UN OBJET LOADTOT
+"""à compléter"""
 
-## AFFICHAGE D'UNE LIGNE DANS UN FICHIER CSV
+# RECUPERATION D'UNE LIGNE D'UN FICHIER CSV MPPT DATA VERS UN OBJET MPPTDATA
+"""à compléter"""
+
+
+# AFFICHAGE CONSOLE D'UNE LIGNE DANS UN FICHIER CSV
 
 def D_line_file_csv(nom_fichier, num_ligne):
     with open(nom_fichier, 'r') as fichier:
@@ -276,7 +311,7 @@ def D_line_file_csv(nom_fichier, num_ligne):
     return
 
 
-## AFFICHAGE D'UN FICHIER CSV ENTIER
+# AFFICHAGE CONSOLE D'UN FICHIER CSV ENTIER
 
 def D_file_csv(nom_fichier):
     with open(nom_fichier, 'r') as fichier:
@@ -297,23 +332,6 @@ def D_file_csv(nom_fichier):
 
 
 ###########################################################################
-## GESTION DES DONNEES
-###########################################################################
-
-
-## MISE EN FORMAT LIGNE FICHIER CHARGE
-"""à completer, le mettre directement dans les méthodes de l'objet Load_Balancer_data_class ?"""
-
-## MISE EN FORMAT LIGNE FICHIER CHARGE TOTALE
-"""à completer"""
-
-## MISE EN FORMAT LIGNE FICHIER CHARGE MPPT
-"""à completer"""
-
-## MISE EN FORMAT LIGNE FICHIER POWERMETER
-"""à completer"""
-
-###########################################################################
 ## MANIPULATION DES DONNEES
 ###########################################################################
 
@@ -330,54 +348,6 @@ def D_file_csv(nom_fichier):
 ## CALCUL DES VALEURS MPPT CHARGES
 """à completer"""
 
-###########################################################################
-## NOTES
-###########################################################################
-
-"""
-class MPPT_Module(Module_class) :
-	def __init__(self):
-		self.ID = 2
-		self.PWR_Out = 0.0 #Watts	
-		self.OC = False
-		self.Limited_To = 100 #Pwr limit on its output (100=> not limited
-	def W_PWR_Out(self, info):
-		self.PWR_Out = info
-	def W_OC(self, info):
-		self.OC = info
-	def W_Limited_To(self, info):
-		self.Limited_To = info
-class BMS_Module (Module_class) :
-	def __init__(self):
-		self.ID = 3
-		self.PWR_Out = 0.0 #Watts	
-		self.OC = False
-		self.SoC = 50  #% of usable energy
-	def W_PWR_Out(self, info):
-		self.PWR_Out = info
-	def W_OC(self, info):
-		self.OC = info
-	def W_SoC(self, info):
-		self.SoC = info
-class INV_Module (Module_class) :
-	def __init__(self):
-		self.ID = 4
-		self.Boost_OK = True #is boost output voltage ok
-		self.INV_OK = True #is inverter output voltage ok
-	def W_Boost_OK(self, info):
-		self.Boost_OK = info
-	def W_INV_OK(self, info):
-		self.INV_OK = info
-class LSW_Module (Module_class) :
-	def __init__(self):
-		self.ID = 5
-		self.PWR_Out = {'L1' : 0.0,'L2' : 0.0,'L3' : 0.0,'L4' : 0.0,'L5' : 0.0,'L6' : 0.0,'L7' : 0.0,'L8' : 0.0} #Watts			
-		self.Load_Stat = {'L1' : 'EDF','L2' : 'EDF','L3' : 'EDF','L4' : 'EDF','L5' : 'EDF','L6' : 'EDF','L7' : 'EDF','L8' : 'EDF'} #EDF/PV
-		def W_PWR_Out(self, Load, PWR_val):
-			self.PWR_Out[Load] = PWR_val
-		def W_Load_Stat(self, Load, stat):
-			self.Load_Stat[Load] = stat 
-"""
 
 ###########################################################################
 ## TEST LOOPS
@@ -391,5 +361,6 @@ class LSW_Module (Module_class) :
 #W_line_file_csv('test1.csv',['x1', 'x2'])
 
 
-info = G_line_file_csv('test1.csv',1)
-info.Display_everything()
+#info = G_line_file_csv('test1.csv',1)
+#info.Display_everything()
+#W_line_file_csv('test1.csv',info.Format_in_line())
