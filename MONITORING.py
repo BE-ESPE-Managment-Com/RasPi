@@ -5,8 +5,7 @@
 #NB : "connected" means the load is connected to the PV, disconnected means it is connected to EDF
 ###############################IMPORTS#####################################
 import time
-import CAN_appli_sender as cn
-
+from CAN_appli import *
 ##############################DEFINES######################################
 MAX_BATTERY_LEVEL = 95
 MIN_BATTERY_LEVEL = 5
@@ -33,8 +32,8 @@ bus = 0
 ############################################################################""
 def b_InitSystem():
     err = False
-    cn.PICAN_LED_init()
-    bus,q = cn.CAN_init()
+    PICAN_LED_init()
+    bus,q = CAN_init()
     #insert code
     return err,bus,q
 
@@ -49,19 +48,31 @@ def u8_Load_Choice_Algorithm(ConnectTo, f32_power_delta):
 			
 	return Matching_load_num
 			
-def Connect_Load():
+def Connect_Load(bus):
 	#Load choice Algorithm
 	LoadNum = u8_Load_Choice_Algorithm("PV",abs(f32_MPPT_Power - f32_LSW_Power))
 	#send CAN message to LSW to connect optimal load
 	SW_Loads(LoadNum,"PV",bus)
 	
-def Disonnect_Load():
+def Disonnect_Load(bus):
 	#Load choice Algorithm
 	LoadNum = u8_Load_Choice_Algorithm("EDF",abs(f32_MPPT_Power - f32_LSW_Power))
 	#send CAN message to LSW to disconnect optimal load
 	SW_Loads(LoadNum,"EDF",bus)
 
 def MainAlgorithm():
+    s_Battery_State = "OK" # "LOW" "HIGH"
+    u8_BatteryLevel = 50
+    f32_BatteryPower = 0.0
+    AllLoadsConnected = False
+    AllLoadsDisconnected = True
+    f32_MPPT_Power = 0.0
+    f32_LSW_Power = 0.0
+    LoadStatusTable = ["EDF","EDF","EDF","EDF","EDF"]
+    LoadSPowerTable = [0.0,0.0,0.0,0.0,0.0]
+    MPPT_Enabled = False
+    bus = 0
+    
     print("Initialising system...")
     InitErr,bus,CAN_msg_queue = b_InitSystem()
     if(InitErr):
@@ -79,10 +90,11 @@ def MainAlgorithm():
         counter += 1
         #check state of watchdogs (check that all modules are sending data on the CAN bus, i.e. the data is fresh and relevant)
         if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
-        	  cn.CAN_RX_Parser(cn.CAN_Receive_msg(bus,CAN_msg_queue)) #read CAN message and parse it
+            s_Battery_State,u8_BatteryLevel,f32_BatteryPower,AllLoadsConnected,AllLoadsDisconnected,f32_MPPT_Power,f32_LSW_Power,LoadStatusTable,LoadSPowerTable,MPPT_Enabled = CAN_RX_Parser(CAN_Receive_msg(bus,CAN_msg_queue),s_Battery_State,u8_BatteryLevel,f32_BatteryPower,AllLoadsConnected,AllLoadsDisconnected,f32_MPPT_Power,f32_LSW_Power,LoadStatusTable,LoadSPowerTable,MPPT_Enabled) #read CAN message and parse it
         
         if(counter == 2000):#1s
             counter = 0
+            print('--------------entering main algo------------')
             #Main Algorithm
             #test battery level
             if(u8_BatteryLevel > MAX_BATTERY_LEVEL):
@@ -92,7 +104,7 @@ def MainAlgorithm():
             elif(u8_BatteryLevel < OK_BATTERY_LEVEL_H and u8_BatteryLevel > OK_BATTERY_LEVEL_L):
                 s_Battery_State = "OK"
 
-            print("Battery State : "+ s_Battery_State)
+            
 
             #code corresponding to different battery states
             if(s_Battery_State == "HIGH"):
@@ -100,14 +112,14 @@ def MainAlgorithm():
                 if(f32_BatteryPower < 0): #is battery Charging?
                     if(AllLoadsConnected):
                         print("Disabling MPPT")
-                        cn.Enable_MPPT(False,bus)
+                        Enable_MPPT(False,bus)
                     else:
-                        Connect_Load()
+                        Connect_Load(bus)
             elif(s_Battery_State == "LOW"):
                 #code for battery undercharge
                 if(not MPPT_Enabled):
                     print("Enabling MPPT")
-                    cn.Enable_MPPT(True,bus)
+                    Enable_MPPT(True,bus)
                     if(not AllLoadsDisconnected):
                         print("Disconnecting load")
                         Disonnect_Load()
@@ -115,7 +127,7 @@ def MainAlgorithm():
                     if(f32_BatteryPower > 0): #is battery discharging?
                         if(not AllLoadsDisconnected):
                             print("Disconnecting load")
-                            Disconnect_Load()
+                            Disconnect_Load(bus)
                         else:
                             pass #if MPPT power > 0, all loads disconnected and battery still discharging there can be a problem.
                             #to be added when the rest is working for additionnal security
@@ -124,21 +136,23 @@ def MainAlgorithm():
                 #code for battery ok
                 if(not MPPT_Enabled):
                     print("Enabling MPPT")
-                    cn.Enable_MPPT(True,bus)
+                    Enable_MPPT(True,bus)
                 else:	
                     if(f32_MPPT_Power > f32_LSW_Power + PRECISION_LOAD_BALANCING):
                         print("Consumption to low compared to production")
                         print("Connecting load...")
-                        Connect_Load()
+                        Connect_Load(bus)
 
                     elif(f32_MPPT_Power < f32_LSW_Power - PRECISION_LOAD_BALANCING):
                         print("Consumption to high compared to production")
                         print("Disconnecting load...")
-                        Disconnect_Load()
+                        Disconnect_Load(bus)
                     else:
-                        print("consumption equivalent to production +/-"+PRECISION_LOAD_BALANCING+"VA")
+                        print("consumption equivalent to production +/-"+str(PRECISION_LOAD_BALANCING)+"VA")
             else:
                 print("Undeclared battery state detected. System shut down...")
                 raise "Undeclared state error" #terminate program
-
+            
+            print("Battery State : "+ s_Battery_State)
+            
 MainAlgorithm()
