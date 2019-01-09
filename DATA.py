@@ -3,14 +3,14 @@
 # Project : BE Interdisciplinaire ESPE
 
 ###########################################################################
-## IMPORT						    	 
+## IMPORT
 ###########################################################################
 
 import csv
 
 
 ###########################################################################
-## CLASSES						    	 
+## CLASSES
 ###########################################################################
 
 ## CLASS DEFINITION FOR MODULES. Use: check initialisation and communication
@@ -121,6 +121,21 @@ class Load_Balancer_data_class:
         self.apparent_power = __apparent_power
         self.freq = __freq
 
+    def Display_everything(self):
+        """Affichage de l'intégralité de l'objet"""
+        print("Date: ",self.date)
+        print("Time: ", self.time)
+        print("Num: ", self.num)
+        print("Type: ", self.type)
+        print("Current: ", self.current, "A")
+        print("Voltage: ", self.voltage, "V")
+        print("Active Power: ", self.active_power, "W")
+        print("Reactive Power: ", self.reactive_power, "VAR")
+        print("Apparent Power: ", self.apparent_power, "VA")
+        print("Power Factor: ", self.power_factor)
+        print("Freq: ", self.freq, "Hz")
+
+
 
 ## CLASS DEFINITION FOR POWERMETER DATA. Use: store data acquired through the powermeter
 
@@ -204,24 +219,48 @@ def W_line_file_csv(nom_fichier, ligne_data):
 
 def G_line_file_csv(nom_fichier, num_ligne):
     with open(nom_fichier, 'r') as fichier:
-        reader = csv.reader(fichier)
+        reader = csv.reader(fichier, delimiter=';')
         rownum = 0
+        info_charge = Load_Balancer_data_class()
         for row in reader:
+            if (rownum == 0):
+                header = row
             if (rownum == num_ligne):
                 colnum = 0
                 for col in row:
-                    """à completer : case ??"""
+                    if (header[colnum]=='date'):
+                        info_charge.Is_date(col)
+                    if (header[colnum]=='time'):
+                        info_charge.Is_time(col)
+                    if (header[colnum]=='num'):
+                        info_charge.Is_num(col)
+                    if (header[colnum]=='type'):
+                        info_charge.Is_type(col)
+                    if (header[colnum]=='current'):
+                        info_charge.Is_current(col)
+                    if (header[colnum]=='voltage'):
+                        info_charge.Is_voltage(col)
+                    if (header[colnum]=='active_power'):
+                        info_charge.Is_active_power(col)
+                    if (header[colnum]=='reactive_power'):
+                        info_charge.Is_reactive_power(col)
+                    if (header[colnum] == 'apparent_power'):
+                        info_charge.Is_apparent_power(col)
+                    if (header[colnum] == 'power_factor'):
+                        info_charge.Is_power_factor(col)
+                    if (header[colnum] == 'freq'):
+                        info_charge.Is_freq(col)
                     colnum += 1
             rownum += 1
     fichier.close()
-    return
+    return info_charge
 
 
 ## AFFICHAGE D'UNE LIGNE DANS UN FICHIER CSV
 
 def D_line_file_csv(nom_fichier, num_ligne):
     with open(nom_fichier, 'r') as fichier:
-        reader = csv.reader(fichier)
+        reader = csv.reader(fichier, delimiter=';')
         rownum = 0
         for row in reader:
             # save header row
@@ -241,7 +280,7 @@ def D_line_file_csv(nom_fichier, num_ligne):
 
 def D_file_csv(nom_fichier):
     with open(nom_fichier, 'r') as fichier:
-        reader = csv.reader(fichier)
+        reader = csv.reader(fichier, delimiter=';')
         rownum = 0
         for row in reader:
             # save header row
@@ -258,7 +297,7 @@ def D_file_csv(nom_fichier):
 
 
 ###########################################################################
-## GESTION DES DONNEES						    	 
+## GESTION DES DONNEES
 ###########################################################################
 
 
@@ -275,7 +314,7 @@ def D_file_csv(nom_fichier):
 """à completer"""
 
 ###########################################################################
-## MANIPULATION DES DONNEES						    	 
+## MANIPULATION DES DONNEES
 ###########################################################################
 
 
@@ -292,79 +331,65 @@ def D_file_csv(nom_fichier):
 """à completer"""
 
 ###########################################################################
-## NOTES					    	 
+## NOTES
 ###########################################################################
 
 """
-
 class MPPT_Module(Module_class) :
 	def __init__(self):
 		self.ID = 2
 		self.PWR_Out = 0.0 #Watts	
 		self.OC = False
 		self.Limited_To = 100 #Pwr limit on its output (100=> not limited
-
 	def W_PWR_Out(self, info):
 		self.PWR_Out = info
-
 	def W_OC(self, info):
 		self.OC = info
-
 	def W_Limited_To(self, info):
 		self.Limited_To = info
-
-
 class BMS_Module (Module_class) :
 	def __init__(self):
 		self.ID = 3
 		self.PWR_Out = 0.0 #Watts	
 		self.OC = False
 		self.SoC = 50  #% of usable energy
-
 	def W_PWR_Out(self, info):
 		self.PWR_Out = info
-
 	def W_OC(self, info):
 		self.OC = info
-
 	def W_SoC(self, info):
 		self.SoC = info
-
-
 class INV_Module (Module_class) :
 	def __init__(self):
 		self.ID = 4
 		self.Boost_OK = True #is boost output voltage ok
 		self.INV_OK = True #is inverter output voltage ok
-
 	def W_Boost_OK(self, info):
 		self.Boost_OK = info
-
 	def W_INV_OK(self, info):
 		self.INV_OK = info
-
-
 class LSW_Module (Module_class) :
 	def __init__(self):
 		self.ID = 5
 		self.PWR_Out = {'L1' : 0.0,'L2' : 0.0,'L3' : 0.0,'L4' : 0.0,'L5' : 0.0,'L6' : 0.0,'L7' : 0.0,'L8' : 0.0} #Watts			
 		self.Load_Stat = {'L1' : 'EDF','L2' : 'EDF','L3' : 'EDF','L4' : 'EDF','L5' : 'EDF','L6' : 'EDF','L7' : 'EDF','L8' : 'EDF'} #EDF/PV
-
 		def W_PWR_Out(self, Load, PWR_val):
 			self.PWR_Out[Load] = PWR_val
-
 		def W_Load_Stat(self, Load, stat):
 			self.Load_Stat[Load] = stat 
-
 """
 
 ###########################################################################
 ## TEST LOOPS
 ###########################################################################
 
-#D_line_file_csv('test.csv', 2)
+#D_line_file_csv('test1.csv', 2)
 
 #D_file_csv('test.csv')
 
 #Init_file_charge_csv('test1.csv')
 #W_line_file_csv('test1.csv',['x1', 'x2'])
+
+
+info = G_line_file_csv('test1.csv',1)
+info.Display_everything()
