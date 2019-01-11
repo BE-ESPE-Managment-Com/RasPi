@@ -8,10 +8,11 @@ from CAN_appli import *
 import numpy as np
 import can
 import time
+import random
 
 ############################################################################
-MPPT_PWR = 5
-u8_BatteryLevel = 50
+MPPT_PWR = 50
+u8_BatteryLevel = 60
 f32_BatteryPower = 0.0
 f32_MPPT_Power = MPPT_PWR
 f32_LSW_Power = 0.0
@@ -22,7 +23,7 @@ LSW_Enabled = 0
 
 bus,CAN_msg_queue=CAN_init()
 PICAN_LED_init()
-Load_Spower_data = [10,15,9,20,30]
+Load_Spower_data = [11,20,35,18,19]
 Load_Switch_status = [0,0,0,0,0]
 counter = 0
 sign = 0
@@ -31,6 +32,7 @@ while(True):
     counter = (counter + 1)
     if counter == 21 :
         counter = 0
+    
     #define Parser for emulator
     CAN_Msg = None 
     if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
@@ -69,7 +71,7 @@ while(True):
         else:
             sign = 0
         #Battery level integration
-        u8_BatteryLevel -= 0.1*f32_BatteryPower
+        u8_BatteryLevel -= 0.08*f32_BatteryPower
         if u8_BatteryLevel > 100 :
             u8_BatteryLevel = 100
         if u8_BatteryLevel < 0 :
@@ -77,11 +79,11 @@ while(True):
      
         #send battery power  
         #myMsg = c_CAN_Message(BMS_MMS_PWR_ID,BMS_MMS_PWR_LENGTH,[int(abs(f32_BatteryPower)).to_bytes(2,byteorder = 'little'),sign.to_bytes(1,byteorder = 'little')])
-        myMsg = c_CAN_Message(BMS_MMS_PWR_ID,BMS_MMS_PWR_LENGTH,[int(abs(f32_BatteryPower)),sign])
+        myMsg = c_CAN_Message(BMS_MMS_PWR_ID,BMS_MMS_PWR_LENGTH,[np.uint8(abs(f32_BatteryPower)),sign])
         CAN_Send_msg(myMsg,bus)
 
         #send battery level
-        myMsg = c_CAN_Message(BMS_MMS_SOC_ID,BMS_MMS_SOC_LENGTH,int(u8_BatteryLevel).to_bytes(1,byteorder = 'little'))
+        myMsg = c_CAN_Message(BMS_MMS_SOC_ID,BMS_MMS_SOC_LENGTH,[np.uint8(u8_BatteryLevel)])
         CAN_Send_msg(myMsg,bus)
      
         #send load Apparent power   
@@ -97,7 +99,7 @@ while(True):
             CAN_Send_msg(myMsg,bus)
 	
         #send MPPT power  
-        myMsg = c_CAN_Message(MPPT_MMS_PWR_ID,MPPT_MMS_PWR_LENGTH,[int(f32_MPPT_Power)])
+        myMsg = c_CAN_Message(MPPT_MMS_PWR_ID,MPPT_MMS_PWR_LENGTH,[np.uint8(f32_MPPT_Power)])
         CAN_Send_msg(myMsg,bus)
     
         #send send MPPT status

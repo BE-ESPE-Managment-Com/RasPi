@@ -7,10 +7,10 @@
 import time
 from CAN_appli import *
 ##############################DEFINES######################################
-MAX_BATTERY_LEVEL = 95
-MIN_BATTERY_LEVEL = 5
-OK_BATTERY_LEVEL_H = 80
-OK_BATTERY_LEVEL_L = 20
+MAX_BATTERY_LEVEL = 75
+MIN_BATTERY_LEVEL = 55
+OK_BATTERY_LEVEL_H = 70
+OK_BATTERY_LEVEL_L = 60
 
 MIN_LOAD_POWER = 0
 MAX_LOAD_POWER = 100
@@ -33,6 +33,8 @@ bus = 0
 class c_System_Data :
 	"""Structure all system data"""
 	def __init__(self):
+		self.date = 'jjmmaa'
+		self.time = 0
 		self.s_Battery_State = "OK" # "LOW" "HIGH"
 		self.u8_BatteryLevel = 50
 		self.f32_BatteryPower = 0.0
@@ -147,6 +149,15 @@ def Disconnect_Load(bus,LoadStatusTable, LoadSPowerTable, f32_BatteryPower):
 def MainAlgorithm():
     SData = c_System_Data()
     bus = 0
+    #Creation of data files
+    Init_file_batt_csv('battery.csv')
+    Init_file_chargetot_csv('charge_tot.csv')
+    Init_file_charge_csv('charge1.csv')
+    Init_file_charge_csv('charge2.csv')
+    Init_file_charge_csv('charge3.csv')
+    Init_file_charge_csv('charge4.csv')
+    Init_file_charge_csv('charge5.csv')
+    Init_file_mppt_csv('mppt.csv')
     
     print("Initialising system...")
     InitErr,bus,CAN_msg_queue,SData = b_InitSystem(SData)
@@ -161,15 +172,17 @@ def MainAlgorithm():
     print("Initialisation done.")
     counter = 0
     while(True):
-        time.sleep(0.05)#0.5ms
+        time.sleep(0.005)#0.5ms
         counter += 1
         #check state of watchdogs (check that all modules are sending data on the CAN bus, i.e. the data is fresh and relevant)
-        while CAN_msg_queue.empty() != True:	# Check if there is a message in queue
+        if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
             SData = CAN_RX_Parser(CAN_Receive_msg(bus,CAN_msg_queue),SData) #read CAN message and parse it
-                
-        if(counter == 20):#1s
+                        
+        if(counter == 200):#1s
             counter = 0
             print('--------------entering main algo------------')
+            SData.time += 1
+            Log_Data(SData) #stor data in log files
             #Main Algorithm
             #test battery level
             if(SData.u8_BatteryLevel > MAX_BATTERY_LEVEL):

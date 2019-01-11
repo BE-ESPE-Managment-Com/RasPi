@@ -10,8 +10,7 @@ import os
 import numpy as np
 import queue
 from threading import Thread
-import struct
-
+from DATA import *
 
 
 
@@ -73,6 +72,7 @@ def CAN_Send_msg(CAN_Msg,bus) :
         GPIO.output(22,True)
         msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
         bus.send(msg)
+        print('sending CAN msg')
         GPIO.output(22,False)
         return
 	
@@ -89,6 +89,10 @@ def CAN_RX_Parser(CAN_Msg,SData):
         else:
             SData.LoadStatusTable[CAN_Msg.Data[0]] = 'EDF'
             #print('load '+str(CAN_Msg.Data[0])+' to EDF')
+        SData.f32_LSW_Power = 0.0
+        for i in range(0,5):
+            if SData.LoadStatusTable[i] == 'PV' :
+                SData.f32_LSW_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
                 
     if('PV' not in SData.LoadStatusTable):
         SData.AllLoadsDisconnected = True
@@ -145,8 +149,19 @@ def CAN_RX_Parser(CAN_Msg,SData):
         	SData.LSW_Enabled = True
         else:
         	SData.LSW_Enabled = False
-        	
+
     return SData
+
+def Log_Data(SData):
+    W_line_file_csv('charge1.csv',[SData.date,SData.time,0,SData.LoadStatusTable[0],0,0,0,0,SData.LoadSPowerTable[0],0,0])
+    W_line_file_csv('charge2.csv',[SData.date,SData.time,1,SData.LoadStatusTable[1],0,0,0,0,SData.LoadSPowerTable[1],0,0])
+    W_line_file_csv('charge3.csv',[SData.date,SData.time,2,SData.LoadStatusTable[2],0,0,0,0,SData.LoadSPowerTable[2],0,0])
+    W_line_file_csv('charge4.csv',[SData.date,SData.time,3,SData.LoadStatusTable[3],0,0,0,0,SData.LoadSPowerTable[3],0,0])
+    W_line_file_csv('charge5.csv',[SData.date,SData.time,4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
+    
+    
+    
+    
 ###########################USER FUNCTONS###########################
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
