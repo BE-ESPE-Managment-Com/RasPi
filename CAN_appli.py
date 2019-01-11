@@ -29,7 +29,7 @@ def PICAN_LED_init() :
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setwarnings(False)
 	GPIO.setup(led,GPIO.OUT)
-	GPIO.output(led,True)
+	GPIO.output(led,False)
 	return
 	
 # CAN receive thread
@@ -70,60 +70,84 @@ class c_CAN_Message :
 		self.Data = _Data
 
 def CAN_Send_msg(CAN_Msg,bus) :
-	msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
-	bus.send(msg)
-	print('sending CAN msg')
-	return
+        GPIO.output(22,True)
+        msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
+        bus.send(msg)
+        print('sending CAN msg')
+        GPIO.output(22,False)
+        return
 	
 def CAN_Receive_msg(bus,q) :
 	message = q.get()
 	CAN_Msg = c_CAN_Message(message.arbitration_id, len(message.data), message.data) #creates object of class CAN_Message
 	return CAN_Msg
 	
-def CAN_RX_Parser(CAN_Msg,s_Battery_State,u8_BatteryLevel,f32_BatteryPower,AllLoadsConnected,AllLoadsDisconnected,f32_MPPT_Power,f32_LSW_Power,LoadStatusTable,LoadSPowerTable,MPPT_Enabled):
+def CAN_RX_Parser(CAN_Msg,SData):
     if (CAN_Msg.ID == LSW_MMS_LDATA1_ID) :
         if(CAN_Msg.Data[1] == 1):
-            LoadStatusTable[CAN_Msg.Data[0]] = 'PV'
+            SData.LoadStatusTable[CAN_Msg.Data[0]] = 'PV'
             #print('load '+str(CAN_Msg.Data[0])+' to PV')
         else:
-            LoadStatusTable[CAN_Msg.Data[0]] = 'EDF'
+            SData.LoadStatusTable[CAN_Msg.Data[0]] = 'EDF'
             #print('load '+str(CAN_Msg.Data[0])+' to EDF')
                 
-    if('PV' not in LoadStatusTable):
-        AllLoadsDisconnected = True       
+    if('PV' not in SData.LoadStatusTable):
+        SData.AllLoadsDisconnected = True
+    else:
+        SData.AllLoadsDisconnected = False
             
-    if('EDF' not in LoadStatusTable):
-        AllLoadsConnected = True
+    if('EDF' not in SData.LoadStatusTable):
+        SData.AllLoadsConnected = True
+    else:
+        SData.AllLoadsConnected = False
             
     if (CAN_Msg.ID == LSW_MMS_LDATA2_ID) :
-        LoadSPowerTable[CAN_Msg.Data[0]] = CAN_Msg.Data[3] #apparent power
+        SData.LoadSPowerTable[CAN_Msg.Data[0]] = CAN_Msg.Data[3] #apparent power
         #print('load '+str(CAN_Msg.Data[0])+' power = '+str(CAN_Msg.Data[3]))
         #Total LSW power
-        f32_LSW_Power = 0.0
+        SData.f32_LSW_Power = 0.0
         for i in range(0,5):
-            if LoadStatusTable[i] == 'PV' :
-                f32_LSW_Power += LoadSPowerTable[i] #add the power consumed by connected loads
+            if SData.LoadStatusTable[i] == 'PV' :
+                SData.f32_LSW_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
     
     if (CAN_Msg.ID == BMS_MMS_SOC_ID) :
-        u8_BatteryLevel = CAN_Msg.Data[0]
+        SData.u8_BatteryLevel = CAN_Msg.Data[0]
 
     if (CAN_Msg.ID == BMS_MMS_PWR_ID) :
         #f32_BatteryPower = int.from_bytes(CAN_Msg.Data[0], byteorder = 'little')
         if CAN_Msg.Data[1]:
-            f32_BatteryPower = -CAN_Msg.Data[0]
+            SData.f32_BatteryPower = -CAN_Msg.Data[0]
         else:
-            f32_BatteryPower = CAN_Msg.Data[0]
+            SData.f32_BatteryPower = CAN_Msg.Data[0]
         
     if (CAN_Msg.ID == MPPT_MMS_PWR_ID) :
-        f32_MPPT_Power = CAN_Msg.Data[0]
+        SData.f32_MPPT_Power = CAN_Msg.Data[0]
         
     if (CAN_Msg.ID == MPPT_MMS_STAT_ID) :
         if(CAN_Msg.Data[0]):
-        	MPPT_Enabled = True
+        	SData.MPPT_Enabled = True
         else:
-        	MPPT_Enabled = False
+        	SData.MPPT_Enabled = False
         	
-    return s_Battery_State,u8_BatteryLevel,f32_BatteryPower,AllLoadsConnected,AllLoadsDisconnected,f32_MPPT_Power,f32_LSW_Power,LoadStatusTable,LoadSPowerTable,MPPT_Enabled
+    if (CAN_Msg.ID == BMS_MMS_STAT_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.BMS_Enabled = True
+        else:
+        	SData.BMS_Enabled = False
+        	
+    if (CAN_Msg.ID == INV_MMS_STAT_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.INV_Enabled = True
+        else:
+        	SData.INV_Enabled = False
+        	
+    if (CAN_Msg.ID == LSW_MMS_STAT_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.LSW_Enabled = True
+        else:
+        	SData.LSW_Enabled = False
+        	
+    return SData
 ###########################USER FUNCTONS###########################
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
@@ -133,7 +157,6 @@ def SW_Loads(LoadNum,LoadPos,bus):
 	elif(LoadPos == 'PV'):
 		pos=1
 	Data = [LoadNum,pos]
-	print('sending load connect'+str(Data[0])+','+str(Data[1]))
 	CAN_Msg = c_CAN_Message(MMS_LSW_SWLOADS_ID,MMS_LSW_SWLOADS_LENGTH,Data) #building CAN object
 	CAN_Send_msg(CAN_Msg,bus)#sending message
 	
@@ -144,6 +167,33 @@ def Enable_MPPT(b_Enable,bus):
 	else:
 		Data = [0]
 	CAN_Msg = c_CAN_Message(MMS_MPPT_EN_ID,MMS_MPPT_EN_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg,bus)#sending message
+	
+def Enable_BMS(b_Enable,bus):
+	#send can message to MPPT	
+	if(b_Enable):
+		Data = [1]
+	else:
+		Data = [0]
+	CAN_Msg = c_CAN_Message(MMS_BMS_EN_ID,MMS_BMS_EN_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg,bus)#sending message
+	
+def Enable_INV(b_Enable,bus):
+	#send can message to MPPT	
+	if(b_Enable):
+		Data = [1]
+	else:
+		Data = [0]
+	CAN_Msg = c_CAN_Message(MMS_INV_EN_ID,MMS_INV_EN_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg,bus)#sending message
+	
+def Enable_LSW(b_Enable,bus):
+	#send can message to MPPT	
+	if(b_Enable):
+		Data = [1]
+	else:
+		Data = [0]
+	CAN_Msg = c_CAN_Message(MMS_LSW_EN_ID,MMS_LSW_EN_LENGTH,Data) #building CAN object
 	CAN_Send_msg(CAN_Msg,bus)#sending message
 			
 #CAN IDs
