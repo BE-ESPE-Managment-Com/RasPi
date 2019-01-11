@@ -661,33 +661,33 @@ def Calculate_current(charge1,charge2,charge3,charge4,charge5):
 
     # charge1
     if (charge1.type=='EDF'):
-        charge_EDF = charge_EDF + charge1.current
+        charge_EDF = charge_EDF + int(charge1.current)
     elif (charge1.type=='PV'):
-        charge_PV = charge_PV + charge1.current
+        charge_PV = charge_PV + int(charge1.current)
 
     # charge2
     if (charge2.type=='EDF'):
-        charge_EDF = charge_EDF + charge2.current
+        charge_EDF = charge_EDF + int(charge2.current)
     elif (charge2.type=='PV'):
-        charge_PV = charge_PV + charge2.current
+        charge_PV = charge_PV + int(charge2.current)
 
     # charge3
     if (charge3.type=='EDF'):
-        charge_EDF = charge_EDF + charge3.current
+        charge_EDF = charge_EDF + int(charge3.current)
     elif (charge3.type=='PV'):
-        charge_PV = charge_PV + charge3.current
+        charge_PV = charge_PV + int(charge3.current)
 
     # charge4
     if (charge4.type=='EDF'):
-        charge_EDF = charge_EDF + charge4.current
+        charge_EDF = charge_EDF + int(charge4.current)
     elif (charge4.type=='PV'):
-        charge_PV = charge_PV + charge4.current
+        charge_PV = charge_PV + int(charge4.current)
 
     # charge5
     if (charge5.type=='EDF'):
-        charge_EDF = charge_EDF + charge5.current
+        charge_EDF = charge_EDF + int(charge5.current)
     elif (charge5.type=='PV'):
-        charge_PV = charge_PV + charge5.current
+        charge_PV = charge_PV + int(charge5.current)
 
     return [charge_EDF,charge_PV]
 
@@ -699,33 +699,33 @@ def Calculate_voltage(charge1,charge2,charge3,charge4,charge5):
 
     # charge1
     if (charge1.type=='EDF'):
-        charge_EDF = charge_EDF + charge1.voltage
+        charge_EDF = charge_EDF + int(charge1.voltage)
     elif (charge1.type=='PV'):
-        charge_PV = charge_PV + charge1.voltage
+        charge_PV = charge_PV + int(charge1.voltage)
 
     # charge2
     if (charge2.type=='EDF'):
-        charge_EDF = charge_EDF + charge2.voltage
+        charge_EDF = charge_EDF + int(charge2.voltage)
     elif (charge2.type=='PV'):
-        charge_PV = charge_PV + charge2.voltage
+        charge_PV = charge_PV + int(charge2.voltage)
 
     # charge3
     if (charge3.type=='EDF'):
-        charge_EDF = charge_EDF + charge3.voltage
+        charge_EDF = charge_EDF + int(charge3.voltage)
     elif (charge3.type=='PV'):
-        charge_PV = charge_PV + charge3.voltage
+        charge_PV = charge_PV + int(charge3.voltage)
 
     # charge4
     if (charge4.type=='EDF'):
-        charge_EDF = charge_EDF + charge4.voltage
+        charge_EDF = charge_EDF + int(charge4.voltage)
     elif (charge4.type=='PV'):
-        charge_PV = charge_PV + charge4.voltage
+        charge_PV = charge_PV + int(charge4.voltage)
 
     # charge5
     if (charge5.type=='EDF'):
-        charge_EDF = charge_EDF + charge5.voltage
+        charge_EDF = charge_EDF + int(charge5.voltage)
     elif (charge5.type=='PV'):
-        charge_PV = charge_PV + charge5.voltage
+        charge_PV = charge_PV + int(charge5.voltage)
 
     return [charge_EDF,charge_PV]
 
@@ -737,33 +737,33 @@ def Calculate_active_power(charge1,charge2,charge3,charge4,charge5):
 
     # charge1
     if (charge1.type=='EDF'):
-        charge_EDF = charge_EDF + charge1.active_power
+        charge_EDF = charge_EDF + int(charge1.active_power)
     elif (charge1.type=='PV'):
-        charge_PV = charge_PV + charge1.active_power
+        charge_PV = charge_PV + int(charge1.active_power)
 
     # charge2
     if (charge2.type=='EDF'):
-        charge_EDF = charge_EDF + charge2.active_power
+        charge_EDF = charge_EDF + int(charge2.active_power)
     elif (charge2.type=='PV'):
-        charge_PV = charge_PV + charge2.active_power
+        charge_PV = charge_PV + int(charge2.active_power)
 
     # charge3
     if (charge3.type=='EDF'):
-        charge_EDF = charge_EDF + charge3.active_power
+        charge_EDF = charge_EDF + int(charge3.active_power)
     elif (charge3.type=='PV'):
-        charge_PV = charge_PV + charge3.active_power
+        charge_PV = charge_PV + int(charge3.active_power)
 
     # charge4
     if (charge4.type=='EDF'):
-        charge_EDF = charge_EDF + charge4.active_power
+        charge_EDF = charge_EDF + int(charge4.active_power)
     elif (charge4.type=='PV'):
-        charge_PV = charge_PV + charge4.active_power
+        charge_PV = charge_PV + int(charge4.active_power)
 
     # charge5
     if (charge5.type=='EDF'):
-        charge_EDF = charge_EDF + charge5.active_power
+        charge_EDF = charge_EDF + int(charge5.active_power)
     elif (charge5.type=='PV'):
-        charge_PV = charge_PV + charge5.active_power
+        charge_PV = charge_PV + int(charge5.active_power)
 
     return [charge_EDF,charge_PV]
 
@@ -775,33 +775,33 @@ def Calculate_reactive_power(charge1,charge2,charge3,charge4,charge5):
 
     # charge1
     if (charge1.type=='EDF'):
-        charge_EDF = charge_EDF + charge1.reactive_power
+        charge_EDF = charge_EDF + int(charge1.reactive_power)
     elif (charge1.type=='PV'):
-        charge_PV = charge_PV + charge1.reactive_power
+        charge_PV = charge_PV + int(charge1.reactive_power)
 
     # charge2
     if (charge2.type=='EDF'):
-        charge_EDF = charge_EDF + charge2.reactive_power
+        charge_EDF = charge_EDF + int(charge2.reactive_power)
     elif (charge2.type=='PV'):
-        charge_PV = charge_PV + charge2.reactive_power
+        charge_PV = charge_PV + int(charge2.reactive_power)
 
     # charge3
     if (charge3.type=='EDF'):
-        charge_EDF = charge_EDF + charge3.reactive_power
+        charge_EDF = charge_EDF + int(charge3.reactive_power)
     elif (charge3.type=='PV'):
-        charge_PV = charge_PV + charge3.reactive_power
+        charge_PV = charge_PV + int(charge3.reactive_power)
 
     # charge4
     if (charge4.type=='EDF'):
-        charge_EDF = charge_EDF + charge4.reactive_power
+        charge_EDF = charge_EDF + int(charge4.reactive_power)
     elif (charge4.type=='PV'):
-        charge_PV = charge_PV + charge4.reactive_power
+        charge_PV = charge_PV + int(charge4.reactive_power)
 
     # charge5
     if (charge5.type=='EDF'):
-        charge_EDF = charge_EDF + charge5.reactive_power
+        charge_EDF = charge_EDF + int(charge5.reactive_power)
     elif (charge5.type=='PV'):
-        charge_PV = charge_PV + charge5.reactive_power
+        charge_PV = charge_PV + int(charge5.reactive_power)
 
     return [charge_EDF,charge_PV]
 
@@ -814,33 +814,33 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 
     # charge1
     if (charge1.type=='EDF'):
-        charge_EDF = charge_EDF + charge1.apparent_power
+        charge_EDF = charge_EDF + int(charge1.apparent_power)
     elif (charge1.type=='PV'):
-        charge_PV = charge_PV + charge1.apparent_power
+        charge_PV = charge_PV + int(charge1.apparent_power)
 
     # charge2
     if (charge2.type=='EDF'):
-        charge_EDF = charge_EDF + charge2.apparent_power
+        charge_EDF = charge_EDF + int(charge2.apparent_power)
     elif (charge2.type=='PV'):
-        charge_PV = charge_PV + charge2.apparent_power
+        charge_PV = charge_PV + int(charge2.apparent_power)
 
     # charge3
     if (charge3.type=='EDF'):
-        charge_EDF = charge_EDF + charge3.apparent_power
+        charge_EDF = charge_EDF + int(charge3.apparent_power)
     elif (charge3.type=='PV'):
-        charge_PV = charge_PV + charge3.apparent_power
+        charge_PV = charge_PV + int(charge3.apparent_power)
 
     # charge4
     if (charge4.type=='EDF'):
-        charge_EDF = charge_EDF + charge4.apparent_power
+        charge_EDF = charge_EDF + int(charge4.apparent_power)
     elif (charge4.type=='PV'):
-        charge_PV = charge_PV + charge4.apparent_power
+        charge_PV = charge_PV + int(charge4.apparent_power)
 
     # charge5
     if (charge5.type=='EDF'):
-        charge_EDF = charge_EDF + charge5.apparent_power
+        charge_EDF = charge_EDF + int(charge5.apparent_power)
     elif (charge5.type=='PV'):
-        charge_PV = charge_PV + charge5.apparent_power
+        charge_PV = charge_PV + int(charge5.apparent_power)
 
     return [charge_EDF,charge_PV]
 
@@ -850,14 +850,68 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 ## TEST LOOPS
 ###########################################################################
 
-#D_line_file_csv('test1.csv', 2)
 
-#D_file_csv('test.csv')
+## FILE INITIALISATION - OK
 
-#Init_file_charge_csv('test1.csv')
-#W_line_file_csv('test1.csv',['x1', 'x2'])
+#Init_file_batt_csv('battery.csv')
+#Init_file_chargetot_csv('charge_tot.csv')
+#Init_file_charge_csv('charge1.csv')
+#Init_file_charge_csv('charge2.csv')
+#Init_file_charge_csv('charge3.csv')
+#Init_file_charge_csv('charge4.csv')
+#Init_file_charge_csv('charge5.csv')
+#Init_file_mppt_csv('mppt.csv')
 
+# WRITE IN FILES - OK
 
-#info = G_line_file_csv('test1.csv',1)
-#info.Display_everything()
-#W_line_file_csv('test1.csv',info.Format_in_line())
+#W_line_file_csv('battery.csv', ['11:01:19', '16:59', '45', '12', 'charging', 'enabled', 'no', 'no', 'no'])
+#W_line_file_csv('charge1.csv', ['11:01:19', '16:59', '1', 'EDF', '1', '1', '1', '1', '1', '0.1', '10'])
+#W_line_file_csv('charge2.csv', ['11:01:19', '16:59', '2', 'PV', '2', '2', '2', '2', '2', '0.2', '20'])
+#W_line_file_csv('charge3.csv', ['11:01:19', '16:59', '3', 'EDF', '3', '3', '3', '3', '3', '0.3', '30'])
+#W_line_file_csv('charge4.csv', ['11:01:19', '16:59', '4', 'PV', '4', '4', '4', '4', '4', '0.4', '40'])
+#W_line_file_csv('charge5.csv', ['11:01:19', '16:59', '5', 'EDF', '5', '5', '5', '5', '5', '0.5', '50'])
+#W_line_file_csv('mppt.csv', ['11:01:19', '16:59', '32', 'on', 'enabled'])
+
+# DISPLAY LINE IN FILE - OK
+
+#D_line_file_csv('battery.csv',2)
+#D_line_file_csv('charge1.csv',2)
+#D_line_file_csv('charge2.csv',2)
+#D_line_file_csv('charge3.csv',2)
+#D_line_file_csv('charge4.csv',2)
+#D_line_file_csv('charge5.csv',2)
+#D_line_file_csv('mppt.csv',2)
+
+# GET OBJECT FROM FILE - OK
+
+#battery = G_line_file_battery_csv('battery.csv',2)
+#charge1 = G_line_file_charge_csv('charge1.csv',2)
+#charge2 = G_line_file_charge_csv('charge2.csv',2)
+#charge3 = G_line_file_charge_csv('charge3.csv',2)
+#charge4 = G_line_file_charge_csv('charge4.csv',2)
+#charge5 = G_line_file_charge_csv('charge5.csv',2)
+#mppt = G_line_file_mppt_csv('mppt.csv', 2)
+
+# DISPLAY OBJECT VALUE - OK
+
+#battery.Display_everything()
+#charge1.Display_everything()
+#charge2.Display_everything()
+#charge3.Display_everything()
+#charge4.Display_everything()
+#charge5.Display_everything()
+#mppt.Display_everything()
+
+# CALCULATE TOTAL LOAD - OK
+
+#[current_EDF, current_PV] = Calculate_current(charge1,charge2,charge3,charge4,charge5)
+#[voltage_EDF, voltage_PV] = Calculate_voltage(charge1,charge2,charge3,charge4,charge5)
+#[active_power_EDF, active_power_PV] = Calculate_active_power(charge1,charge2,charge3,charge4,charge5)
+#[reactive_power_EDF, reactive_power_PV] = Calculate_reactive_power(charge1,charge2,charge3,charge4,charge5)
+#[apparent_power_EDF, apparent_power_PV] = Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5)
+
+#W_line_file_csv('charge_tot.csv', ['11:01:19', '16:59', current_EDF, current_PV, voltage_EDF, voltage_PV,
+                active_power_EDF, active_power_PV, reactive_power_EDF, reactive_power_PV, apparent_power_EDF,
+                apparent_power_PV])
+
+#D_line_file_csv('charge_tot.csv',2)
