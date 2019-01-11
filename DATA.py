@@ -911,7 +911,21 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 #[apparent_power_EDF, apparent_power_PV] = Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5)
 
 #W_line_file_csv('charge_tot.csv', ['11:01:19', '16:59', current_EDF, current_PV, voltage_EDF, voltage_PV,
-                active_power_EDF, active_power_PV, reactive_power_EDF, reactive_power_PV, apparent_power_EDF,
-                apparent_power_PV])
+#                active_power_EDF, active_power_PV, reactive_power_EDF, reactive_power_PV, apparent_power_EDF,
+#                apparent_power_PV])
 
 #D_line_file_csv('charge_tot.csv',2)
+
+
+# WRITE IN LINE FROM OBJECT
+
+#W_line_file_csv('battery.csv', battery.Format_in_line())
+#W_line_file_csv('charge1.csv', charge1.Format_in_line())
+#W_line_file_csv('charge2.csv', charge2.Format_in_line())
+#W_line_file_csv('charge3.csv', charge3.Format_in_line())
+#W_line_file_csv('charge4.csv', charge4.Format_in_line())
+#W_line_file_csv('charge5.csv', charge5.Format_in_line())
+#W_line_file_csv('mppt.csv', mppt.Format_in_line())
+
+#charge_tot = G_line_file_chargetot_csv('charge_tot.csv',2)
+#W_line_file_csv('charge_tot.csv', charge_tot.Format_in_line())
