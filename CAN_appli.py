@@ -73,7 +73,6 @@ def CAN_Send_msg(CAN_Msg,bus) :
         GPIO.output(22,True)
         msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
         bus.send(msg)
-        print('sending CAN msg')
         GPIO.output(22,False)
         return
 	

@@ -47,7 +47,7 @@ class c_System_Data :
 		self.INV_Enabled = False
 		self.LSW_Enabled = False
 
-def b_InitSystem():
+def b_InitSystem(SData):
     err = False
     PICAN_LED_init()
     bus,q = CAN_init()
@@ -58,25 +58,29 @@ def b_InitSystem():
     for i in range(0,20): #BMS init
         time.sleep(1)#wait 1s
         Enable_BMS(True,bus)
-        if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
+        while q.empty() != True:	# Check if there is a message in queue
+            CAN_Msg = CAN_Receive_msg(bus,q)
             if (CAN_Msg.ID == BMS_MMS_STAT_ID) :
                 if(CAN_Msg.Data[0]):
                         SData.BMS_Enabled = True
                         break
                 else:
                         SData.BMS_Enabled = False
-    if not BMS_Enabled :
+    if not SData.BMS_Enabled :
         print('ERR BMS NOT RESPONDING')
         print('20s timeout exceeded')
-        raise "Initialisation error" #terminate program
+        raise SystemError("Initialisation error") #terminate program
     
-    for i in range(0,20): #LSW and INV init
-        time.sleep(0.5)#wait 0.5s
-        Enable_INV(True,bus)
-        time.sleep(0.5)#wait 0.5s
-        Enable_LSW(True,bus)
+    for i in range(0,30): #LSW and INV init
+        time.sleep(0.4)#wait 0.5s
+        if not SData.INV_Enabled:
+            Enable_INV(True,bus)
+        time.sleep(0.4)#wait 0.5s
+        if not SData.LSW_Enabled:
+            Enable_LSW(True,bus)
         
-        if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
+        while q.empty() != True:	# Check if there is a message in queue
+            CAN_Msg = CAN_Receive_msg(bus,q)
             if (CAN_Msg.ID == INV_MMS_STAT_ID) :
                 if(CAN_Msg.Data[0]):
                         SData.INV_Enabled = True
@@ -90,16 +94,16 @@ def b_InitSystem():
                 else:
                         SData.LSW_Enabled = False
                         
-    if not INV_Enabled :
-        print('INV BMS NOT RESPONDING')
+    if not SData.INV_Enabled :
+        print('ERR INV NOT RESPONDING')
         print('20s timeout exceeded')
-        raise "Initialisation error" #terminate program
-    if not LSW_Enabled :
+        raise SystemError("Initialisation error") #terminate program
+    if not SData.LSW_Enabled :
         print('ERR LSW NOT RESPONDING')
         print('20s timeout exceeded')
-        raise "Initialisation error" #terminate program
+        raise SystemError("Initialisation error") #terminate program
     
-    return err,bus,q
+    return err,bus,q,SData
 
 def u8_Load_Choice_Algorithm(ConnectTo, f32_power_batt, LoadStatusTable, LoadSPowerTable):
 	#get load power data
@@ -145,22 +149,22 @@ def MainAlgorithm():
     bus = 0
     
     print("Initialising system...")
-    InitErr,bus,CAN_msg_queue = b_InitSystem()
+    InitErr,bus,CAN_msg_queue,SData = b_InitSystem(SData)
     if(InitErr):
         print("Initialisation error. Trying again...")
         time.sleep(1)#wait 1s
         print("Initialising system...")
-        InitErr,bus,CAN_msg_queue = b_InitSystem()
+        InitErr,bus,CAN_msg_queue,SData = b_InitSystem(SData)
         if(InitErr):
             print("Second initialisation error. System shut down...")
-            raise "Initialisation error" #terminate program
+            raise SystemError("Initialisation error") #terminate program
     print("Initialisation done.")
     counter = 0
     while(True):
         time.sleep(0.05)#0.5ms
         counter += 1
         #check state of watchdogs (check that all modules are sending data on the CAN bus, i.e. the data is fresh and relevant)
-        if CAN_msg_queue.empty() != True:	# Check if there is a message in queue
+        while CAN_msg_queue.empty() != True:	# Check if there is a message in queue
             SData = CAN_RX_Parser(CAN_Receive_msg(bus,CAN_msg_queue),SData) #read CAN message and parse it
                 
         if(counter == 20):#1s

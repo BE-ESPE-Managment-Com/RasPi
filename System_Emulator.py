@@ -16,6 +16,9 @@ f32_BatteryPower = 0.0
 f32_MPPT_Power = MPPT_PWR
 f32_LSW_Power = 0.0
 MPPT_Enabled = 0
+BMS_Enabled = 0
+INV_Enabled = 0
+LSW_Enabled = 0
 
 bus,CAN_msg_queue=CAN_init()
 PICAN_LED_init()
@@ -38,6 +41,15 @@ while(True):
         if(CAN_Msg.ID == MMS_MPPT_EN_ID):
             MPPT_Enabled = CAN_Msg.Data[0]
             print('received MPPT_EN : '+ str(MPPT_Enabled))
+        if(CAN_Msg.ID == MMS_BMS_EN_ID):
+            BMS_Enabled = CAN_Msg.Data[0]
+            print('received BMS_EN : '+ str(BMS_Enabled))
+        if(CAN_Msg.ID == MMS_INV_EN_ID):
+            INV_Enabled = CAN_Msg.Data[0]
+            print('received INV_EN : '+ str(INV_Enabled))
+        if(CAN_Msg.ID == MMS_LSW_EN_ID):
+            LSW_Enabled = CAN_Msg.Data[0]
+            print('received LSW_EN : '+ str(LSW_Enabled))
      
     if MPPT_Enabled :
         f32_MPPT_Power = MPPT_PWR
@@ -90,6 +102,22 @@ while(True):
     
         #send send MPPT status
         myMsg = c_CAN_Message(MPPT_MMS_STAT_ID,MPPT_MMS_STAT_LENGTH,[np.uint8(MPPT_Enabled)])
+        print('sending MPPT_STAT '+str([np.uint8(MPPT_Enabled)]))
+        CAN_Send_msg(myMsg,bus)
+        
+        #send send MPPT status
+        myMsg = c_CAN_Message(BMS_MMS_STAT_ID,BMS_MMS_STAT_LENGTH,[np.uint8(BMS_Enabled)])
+        print('sending BMS_STAT '+str([np.uint8(BMS_Enabled)]))
+        CAN_Send_msg(myMsg,bus)
+        
+        #send send MPPT status
+        myMsg = c_CAN_Message(INV_MMS_STAT_ID,INV_MMS_STAT_LENGTH,[np.uint8(INV_Enabled)])
+        print('sending INV_STAT '+str([np.uint8(INV_Enabled)]))
+        CAN_Send_msg(myMsg,bus)
+        
+        #send send MPPT status
+        myMsg = c_CAN_Message(LSW_MMS_STAT_ID,LSW_MMS_STAT_LENGTH,[np.uint8(LSW_Enabled)])
+        print('sending LSW_STAT '+str([np.uint8(LSW_Enabled)]))
         CAN_Send_msg(myMsg,bus)
     
         print('Battery level : '+str(u8_BatteryLevel))
