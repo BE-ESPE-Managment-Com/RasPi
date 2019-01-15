@@ -141,6 +141,24 @@ def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox f
         	SData.LSW_Enabled = True
         else:
         	SData.LSW_Enabled = False
+        	
+    if (CAN_Msg.ID == BMS_MMS_OCH_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.BMS_OCH = True
+        else:
+        	SData.BMS_OCH = False
+    
+    if (CAN_Msg.ID == BMS_MMS_UCH_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.BMS_UCH = True
+        else:
+        	SData.BMS_UCH = False
+        	
+    if (CAN_Msg.ID == BMS_MMS_OT_ID) :
+        if(CAN_Msg.Data[0]):
+        	SData.BMS_OT = True
+        else:
+        	SData.BMS_OT = False
 
     return SData
 
@@ -151,7 +169,7 @@ def Log_Data(SData):
     W_line_file_csv('logs/charge4.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),3,SData.LoadStatusTable[3],0,0,0,0,SData.LoadSPowerTable[3],0,0])
     W_line_file_csv('logs/charge5.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
     W_line_file_csv('logs/mppt.csv',   [(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),SData.f32_MPPT_Power,1,SData.MPPT_Enabled])
-    W_line_file_csv('logs/battery.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),str(SData.u8_BatteryLevel),str(abs(SData.f32_BatteryPower)),np.sign(SData.f32_BatteryPower),str(SData.MPPT_Enabled),0,0,0])
+    W_line_file_csv('logs/battery.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),str(SData.u8_BatteryLevel),str(abs(SData.f32_BatteryPower)),np.sign(SData.f32_BatteryPower),str(SData.MPPT_Enabled),str(SData.BMS_OCH),str(SData.BMS_UCH),str(SData.BMS_OT)])
     
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
