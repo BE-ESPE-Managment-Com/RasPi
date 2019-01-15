@@ -648,11 +648,71 @@ def D_file_csv(nom_fichier):
 ###########################################################################
 
 
-## CALCUL DE MOYENNE
-"""à completer"""
+## RECUPERATION DES INDICES DU FICHIER CSV CORRESPONDANTS A UNE BANDE TEMPORELLE DONNEE
+## Note: date format should be: dd/mm/yyyy
+def G_linenumber(nom_fichier,date_inf,time_inf,date_sup,time_sup):
+    line_inf=0
+    line_sup=0
+    with open(nom_fichier, 'r') as fichier:
+        reader = csv.reader(fichier, delimiter=';')
+        rownum = 0
+        for row in reader:
+            colnum = 0
+            # get date and time from line
+            for col in row:
+                # using only date and time column
+                if (colnum == 0):
+                    date_line = col
+                elif (colnum == 1):
+                    time_line = col
+                colnum += 1
 
-## CALCUL DE RMS
-"""à completer"""
+            if (rownum != 0): # doesn't include header line
+
+                # update line_inf
+                earlier_year1 = (int(date_line[6:10]) < int(date_inf[6:10]))
+                same_year1 = (int(date_line[6:10]) == int(date_inf[6:10]))
+                earlier_month1 = (int(date_line[3:5]) < int(date_inf[3:5]))
+                same_month1 = (int(date_line[3:5]) == int(date_inf[3:5]))
+                earlier_day1 = (int(date_line[0:2]) < int(date_inf[0:2]))
+                same_day1 = (int(date_line[0:2]) == int(date_inf[0:2]))
+                earlier_hour1 = (int(time_line[0:2]) < int(time_inf[0:2]))
+                same_hour1 = (int(time_line[0:2]) == int(time_inf[0:2]))
+                earlier_minute1 =(int(time_line[3:5]) < int(time_inf[3:5]))
+                same_minute1 = (int(time_line[3:5]) == int(time_inf[3:5]))
+
+                if (earlier_year1 |
+                   (same_year1 & earlier_month1) |
+                   (same_year1 & same_month1 & earlier_day1) |
+                   (same_year1 & same_month1 & same_day1 & earlier_hour1) |
+                   (same_year1 & same_month1 & same_day1 & same_hour1 & earlier_minute1) |
+                   (same_year1 & same_month1 & same_day1 & same_hour1 & same_minute1)):
+                    line_inf += 1
+
+
+                # update line_sup
+                earlier_year2 = (int(date_line[6:10]) < int(date_sup[6:10]))
+                same_year2 = (int(date_line[6:10]) == int(date_sup[6:10]))
+                earlier_month2 = (int(date_line[3:5]) < int(date_sup[3:5]))
+                same_month2 = (int(date_line[3:5]) == int(date_sup[3:5]))
+                earlier_day2 = (int(date_line[0:2]) < int(date_sup[0:2]))
+                same_day2 = (int(date_line[0:2]) == int(date_sup[0:2]))
+                earlier_hour2 = (int(time_line[0:2]) < int(time_sup[0:2]))
+                same_hour2 = (int(time_line[0:2]) == int(time_sup[0:2]))
+                earlier_minute2 =(int(time_line[3:5]) < int(time_sup[3:5]))
+                same_minute2 = (int(time_line[3:5]) == int(time_sup[3:5]))
+
+                if (earlier_year2 |
+                   (same_year2 & earlier_month2) |
+                   (same_year2 & same_month2 & earlier_day2) |
+                   (same_year2 & same_month2 & same_day2 & earlier_hour2) |
+                   (same_year2 & same_month2 & same_day2 & same_hour2 & earlier_minute2) |
+                   (same_year2 & same_month2 & same_day2 & same_hour2 & same_minute2)):
+                    line_sup += 1
+            rownum += 1
+    fichier.close()
+    return [line_inf,line_sup]
+
 
 ## CALCUL DES COURANTS TOTAUX. Note: chargex should be Load_Balancer_class type
 def Calculate_current(charge1,charge2,charge3,charge4,charge5):
@@ -844,7 +904,16 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 
     return [charge_EDF,charge_PV]
 
-
+## ERASE ANY UNWANTED BLANK LINES
+def Erase_blanks(nom_fichier):
+    input = open(nom_fichier, 'r')
+    output = open(nom_fichier, 'w')
+    writer = csv.writer(output)
+    for row in csv.reader(input):
+        if any(row):
+            writer.writerow(row)
+    input.close()
+    output.close()
 
 ###########################################################################
 ## TEST LOOPS
@@ -864,13 +933,13 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 
 # WRITE IN FILES - OK
 
-#W_line_file_csv('battery.csv', ['11:01:19', '16:59', '45', '12', 'charging', 'enabled', 'no', 'no', 'no'])
-#W_line_file_csv('charge1.csv', ['11:01:19', '16:59', '1', 'EDF', '1', '1', '1', '1', '1', '0.1', '10'])
-#W_line_file_csv('charge2.csv', ['11:01:19', '16:59', '2', 'PV', '2', '2', '2', '2', '2', '0.2', '20'])
-#W_line_file_csv('charge3.csv', ['11:01:19', '16:59', '3', 'EDF', '3', '3', '3', '3', '3', '0.3', '30'])
-#W_line_file_csv('charge4.csv', ['11:01:19', '16:59', '4', 'PV', '4', '4', '4', '4', '4', '0.4', '40'])
-#W_line_file_csv('charge5.csv', ['11:01:19', '16:59', '5', 'EDF', '5', '5', '5', '5', '5', '0.5', '50'])
-#W_line_file_csv('mppt.csv', ['11:01:19', '16:59', '32', 'on', 'enabled'])
+#W_line_file_csv('battery.csv', ['11/01/2019', '16:59', '45', '12', 'charging', 'enabled', 'no', 'no', 'no'])
+#W_line_file_csv('charge1.csv', ['11/01/2019', '16:59', '1', 'EDF', '1', '1', '1', '1', '1', '0.1', '10'])
+#W_line_file_csv('charge2.csv', ['11/01/2019', '16:59', '2', 'PV', '2', '2', '2', '2', '2', '0.2', '20'])
+#W_line_file_csv('charge3.csv', ['11/01/2019', '16:59', '3', 'EDF', '3', '3', '3', '3', '3', '0.3', '30'])
+#W_line_file_csv('charge4.csv', ['11/01/2019', '16:59', '4', 'PV', '4', '4', '4', '4', '4', '0.4', '40'])
+#W_line_file_csv('charge5.csv', ['11/01/2019', '16:59', '5', 'EDF', '5', '5', '5', '5', '5', '0.5', '50'])
+#W_line_file_csv('mppt.csv', ['11/01/19', '16:59', '32', 'on', 'enabled'])
 
 # DISPLAY LINE IN FILE - OK
 
@@ -910,14 +979,14 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 #[reactive_power_EDF, reactive_power_PV] = Calculate_reactive_power(charge1,charge2,charge3,charge4,charge5)
 #[apparent_power_EDF, apparent_power_PV] = Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5)
 
-#W_line_file_csv('charge_tot.csv', ['11:01:19', '16:59', current_EDF, current_PV, voltage_EDF, voltage_PV,
+#W_line_file_csv('charge_tot.csv', ['11/01/2019', '16:59', current_EDF, current_PV, voltage_EDF, voltage_PV,
 #                active_power_EDF, active_power_PV, reactive_power_EDF, reactive_power_PV, apparent_power_EDF,
 #                apparent_power_PV])
 
 #D_line_file_csv('charge_tot.csv',2)
 
 
-# WRITE IN LINE FROM OBJECT
+# WRITE IN LINE FROM OBJECT - OK
 
 #W_line_file_csv('battery.csv', battery.Format_in_line())
 #W_line_file_csv('charge1.csv', charge1.Format_in_line())
@@ -929,3 +998,12 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 
 #charge_tot = G_line_file_chargetot_csv('charge_tot.csv',2)
 #W_line_file_csv('charge_tot.csv', charge_tot.Format_in_line())
+
+
+# GET LINE NUMBERS FOR A SPECIFIED PERIOD OF TIME - OK
+
+#line_numbers = G_linenumber('charge1.csv','11/01/2019','16:59','14/01/2019','18:59')
+#print(line_numbers)
+
+# ERASE BLANK LINES FROM FILES - NOT WORKING YET
+Erase_blanks('charge4.csv')
