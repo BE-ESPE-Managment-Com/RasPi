@@ -11,17 +11,6 @@ import numpy as np
 import queue
 from threading import Thread
 from DATA import *
-
-
-
-
-
-
-
-
-
-
-
 ############################################################################
 def PICAN_LED_init() :
 	led = 22
@@ -81,7 +70,7 @@ def CAN_Receive_msg(bus,q) :
 	CAN_Msg = c_CAN_Message(message.arbitration_id, len(message.data), message.data) #creates object of class CAN_Message
 	return CAN_Msg
 	
-def CAN_RX_Parser(CAN_Msg,SData):
+def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox for details about the cAN frames.
     if (CAN_Msg.ID == LSW_MMS_LDATA1_ID) :
         if(CAN_Msg.Data[1] == 1):
             SData.LoadStatusTable[CAN_Msg.Data[0]] = 'PV'
@@ -89,6 +78,7 @@ def CAN_RX_Parser(CAN_Msg,SData):
         else:
             SData.LoadStatusTable[CAN_Msg.Data[0]] = 'EDF'
             #print('load '+str(CAN_Msg.Data[0])+' to EDF')
+        # updating the load power sum
         SData.f32_LSW_Power = 0.0
         for i in range(0,5):
             if SData.LoadStatusTable[i] == 'PV' :
@@ -106,7 +96,6 @@ def CAN_RX_Parser(CAN_Msg,SData):
             
     if (CAN_Msg.ID == LSW_MMS_LDATA2_ID) :
         SData.LoadSPowerTable[CAN_Msg.Data[0]] = CAN_Msg.Data[3] #apparent power
-        #print('load '+str(CAN_Msg.Data[0])+' power = '+str(CAN_Msg.Data[3]))
         #Total LSW power
         SData.f32_LSW_Power = 0.0
         for i in range(0,5):
@@ -159,10 +148,6 @@ def Log_Data(SData):
     W_line_file_csv('charge4.csv',[SData.date,SData.time,3,SData.LoadStatusTable[3],0,0,0,0,SData.LoadSPowerTable[3],0,0])
     W_line_file_csv('charge5.csv',[SData.date,SData.time,4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
     
-    
-    
-    
-###########################USER FUNCTONS###########################
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
 	#LoadPos in [PV,EDF]
@@ -252,34 +237,4 @@ MMS_LSW_SWLOADS_LENGTH =		2
 BMS_MMS_OCH_LENGTH =		1
 BMS_MMS_UCH_LENGTH =		1
 BMS_MMS_OT_LENGTH =			1
-"""
-#test code section
-bus=CAN_init()
-PICAN_LED_init()
-Active_power = 0
-Reactive_power = 100
-Load_Apower_data = [0,0,0,0,0]
-Load_Rpower_data = [60,60,60,60,60]
-Load_Switch_status = [1,0,1,1,0]
-LSW_MMS_LDATA1_LENGTH = 5
-while(True):
-	time.sleep(0.7)
-	Active_power +=1
-	if (Active_power == 50):
-		Active_power = 0
-	Load_Apower_data = [Active_power*2,Active_power+3,Active_power,Active_power/2,Active_power+5]
-	
-	Reactive_power -=1
-	if (Reactive_power == 0):
-		Reactive_power = 60
-	Load_Apower_data = [Reactive_power*2,Reactive_power+3,Reactive_power,Reactive_power/2,Reactive_power+5]
 
-	if(Reactive_power == 14 or Reactive_power == 58):
-		Load_Switch_status[2] = not Load_Switch_status[2]
-		Load_Switch_status[0] = not Load_Switch_status[0]
-	for i in range(0,4):
-		myMsg = c_CAN_Message(LSW_MMS_LDATA1_ID,LSW_MMS_LDATA1_LENGTH,[np.uint8(i),np.uint8(Load_Switch_status[i]),np.uint16('10'),np.uint16(Load_Rpower_data[i]),np.uint16(Load_Apower_data[i])])
-		time.sleep(0.5)
-		CAN_Send_msg(myMsg)
-
-"""
