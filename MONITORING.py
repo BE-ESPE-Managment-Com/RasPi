@@ -5,6 +5,7 @@
 #NB : "connected" means the load is connected to the PV, disconnected means it is connected to EDF
 ###############################IMPORTS#####################################
 import time
+import datetime
 from CAN_appli import *
 ##############################DEFINES######################################
 MAX_BATTERY_LEVEL = 75
@@ -17,6 +18,8 @@ MAX_LOAD_POWER = 100
 
 PRECISION_LOAD_BALANCING = 5 #VA
 
+ON = True
+OFF = False
 ###############################VARIABLES###################################
 s_Battery_State = "OK" # "LOW" "HIGH"
 u8_BatteryLevel = 50
@@ -33,10 +36,9 @@ bus = 0
 class c_System_Data :
 	"""Structure for all system data"""
 	def __init__(self):
-		self.date = 'jjmmaa' #current real time date (not managed yet)
-		self.time = 0 #current time (currently only a simple counter ++)
+		self.date_time = datetime.datetime.now() #current real time date (not managed yet)
 		self.s_Battery_State = "OK" # Battery charge status ("LOW", "OK", "HIGH") Managed with a hysteresis 
-								# to prevent too rapid commutation of the switches)
+		# to prevent too rapid commutation of the switches)
 		self.u8_BatteryLevel = 70 # battery charge percentage (usable is 50 to 80)
 		self.f32_BatteryPower = 0.0 # battery power in VA, + is out of the battery, - is into the battery
 		self.AllLoadsConnected = False #verification based on LSW module info (load status)
@@ -45,6 +47,8 @@ class c_System_Data :
 		self.f32_LSW_Power = 0.0 #Sum of the power consumed by all the loads connected
 		self.LoadStatusTable = ['EDF','EDF','EDF','EDF','EDF'] #EDF or PV
 		self.LoadSPowerTable = [0.0,0.0,0.0,0.0,0.0] #power for each load (VA)
+		self.MPPT_SW = ON #power switch between the battery and the inverter, controlled by the MPPT module. Not used yet (TODO : has to be added in case of emergency)
+		self.MPPT_on = OFF #switching and harvesting power. Can be replaced with a max output power limit rather than shutin it off
 		self.MPPT_Enabled = False #module status
 		self.BMS_Enabled = False #module status
 		self.INV_Enabled = False #module status
@@ -70,7 +74,14 @@ def b_InitSystem(SData):
     
     Enable_BMS(True,bus)
     for i in range(0,20): #BMS init
-        time.sleep(1)#wait 1s
+        time.sleep(0.1)#wait 1s
+        print('Init in process, please wait ')
+        time.sleep(0.1)
+        print('Init in process, please wait .')
+        time.sleep(0.1)
+        print('Init in process, please wait ..')
+        time.sleep(0.1)
+        print('Init in process, please wait ...')
         Enable_BMS(True,bus)
         while q.empty() != True:	# Check if there is a message in queue
             CAN_Msg = CAN_Receive_msg(bus,q)
@@ -83,15 +94,23 @@ def b_InitSystem(SData):
     if not SData.BMS_Enabled :
         print('ERR BMS NOT RESPONDING')
         print('20s timeout exceeded')
-        return True,0,0,0 #terminate program
+        return True,bus,q,SData #terminate program
     
     for i in range(0,30): #LSW and INV init
-        time.sleep(0.4)#wait 0.5s
+        time.sleep(0.1)#wait 1s
+        print('Init in process, please wait ')
+        time.sleep(0.1)
+        print('Init in process, please wait .')
+        time.sleep(0.1)
+        print('Init in process, please wait ..')
+        time.sleep(0.1)
+        print('Init in process, please wait ...')
         if not SData.INV_Enabled:
             Enable_INV(True,bus)
-        time.sleep(0.4)#wait 0.5s
         if not SData.LSW_Enabled:
             Enable_LSW(True,bus)
+        if not SData.MPPT_Enabled:
+            Enable_MPPT(True,bus)
         
         while q.empty() != True:	# Check if there is a message in queue
             CAN_Msg = CAN_Receive_msg(bus,q)
@@ -108,14 +127,26 @@ def b_InitSystem(SData):
                 else:
                         SData.LSW_Enabled = False
                         
+            if (CAN_Msg.ID == MPPT_MMS_STAT_ID) :
+                if(CAN_Msg.Data[0]):
+                        SData.MPPT_Enabled = True
+                else:
+                        SData.MPPT_Enabled = False
+                        
     if not SData.INV_Enabled :
         print('ERR INV NOT RESPONDING')
         print('20s timeout exceeded')
-        return True,0,0,0 #terminate program
+        return True,bus,q,SData #terminate program
+    
     if not SData.LSW_Enabled :
         print('ERR LSW NOT RESPONDING')
         print('20s timeout exceeded')
-        return True,0,0,0 #terminate program
+        return True,bus,q,SData #terminate program
+    
+    if not SData.MPPT_Enabled :
+        print('ERR MPPT NOT RESPONDING')
+        print('20s timeout exceeded')
+        return True,bus,q,SData #terminate program
     
     return err,bus,q,SData
     
@@ -187,14 +218,14 @@ def MainAlgorithm():
     SData = c_System_Data()
     bus = 0
     #Creation of data files for data logging
-    Init_file_batt_csv('battery.csv')
-    Init_file_chargetot_csv('charge_tot.csv')
-    Init_file_charge_csv('charge1.csv')
-    Init_file_charge_csv('charge2.csv')
-    Init_file_charge_csv('charge3.csv')
-    Init_file_charge_csv('charge4.csv')
-    Init_file_charge_csv('charge5.csv')
-    Init_file_mppt_csv('mppt.csv')
+    Init_file_batt_csv('logs/battery.csv')
+    Init_file_chargetot_csv('logs/charge_tot.csv')
+    Init_file_charge_csv('logs/charge1.csv')
+    Init_file_charge_csv('logs/charge2.csv')
+    Init_file_charge_csv('logs/charge3.csv')
+    Init_file_charge_csv('logs/charge4.csv')
+    Init_file_charge_csv('logs/charge5.csv')
+    Init_file_mppt_csv('logs/mppt.csv')
     
     print("Initialising system...")
     InitErr,bus,CAN_msg_queue,SData = b_InitSystem(SData)
@@ -219,7 +250,12 @@ def MainAlgorithm():
         if(counter == 200):#1s
             counter = 0
             print('--------------entering main algo------------')
-            SData.time += 1
+            #SData.time += 1
+            
+            #Upadte Time and date
+            SData.date_time = datetime.datetime.now()
+           
+            
             Log_Data(SData) #store data in log files
             #test battery level
             if(SData.u8_BatteryLevel > MAX_BATTERY_LEVEL):
@@ -234,16 +270,16 @@ def MainAlgorithm():
                 #code for battery overcharge
                 if(SData.f32_BatteryPower <= 0): #is battery Charging?
                     if(SData.AllLoadsConnected):
-                        print("Disabling MPPT")
-                        Enable_MPPT(False,bus)
+                        print("Stopping MPPT")
+                        Turn_MPPT(OFF,bus)
                     else:
                         Connect_Load(bus,SData.LoadStatusTable,SData.LoadSPowerTable, SData.f32_BatteryPower)
                         
             elif(SData.s_Battery_State == "LOW"):
                 #code for battery undercharge
-                if(not SData.MPPT_Enabled):
-                    print("Enabling MPPT")
-                    Enable_MPPT(True,bus)
+                if(not SData.MPPT_on):
+                    print("Starting MPPT")
+                    Turn_MPPT(ON,bus)
                     if(not SData.AllLoadsDisconnected):
                         Disconnect_Load(bus,SData.LoadStatusTable,SData.LoadSPowerTable, SData.f32_BatteryPower)
                 else:
@@ -256,9 +292,9 @@ def MainAlgorithm():
 
             elif(SData.s_Battery_State == "OK"):
                 #code for battery ok
-                if(not SData.MPPT_Enabled):
-                    print("Enabling MPPT")
-                    Enable_MPPT(True,bus)
+                if(not SData.MPPT_on):
+                    print("Starting MPPT")
+                    Turn_MPPT(ON,bus)
                 else:	
                     if(SData.f32_MPPT_Power > SData.f32_LSW_Power + PRECISION_LOAD_BALANCING):
                         print("Consumption to low compared to production")
@@ -280,10 +316,10 @@ def MainAlgorithm():
                 print('all loads connected')
             print('battery level =  '+str(SData.u8_BatteryLevel))
             print('battery power =  '+str(SData.f32_BatteryPower))
-            if SData.MPPT_Enabled :
-                print('MPPT Enabled')
+            if SData.MPPT_on :
+                print('MPPT started')
             else :
-                print('MPPT Disabled')
+                print('MPPT stopped')
             print('MPPT power =  '+str(SData.f32_MPPT_Power))
             print(SData.LoadStatusTable)
             print(SData.LoadSPowerTable)

@@ -11,11 +11,12 @@ import time
 import random
 
 ############################################################################
-MPPT_PWR = 50
+MPPT_PWR = 100
 u8_BatteryLevel = 60
 f32_BatteryPower = 0.0
 f32_MPPT_Power = MPPT_PWR
 f32_LSW_Power = 0.0
+MPPT_on = False
 MPPT_Enabled = 0
 BMS_Enabled = 0
 INV_Enabled = 0
@@ -52,9 +53,14 @@ while(True):
         if(CAN_Msg.ID == MMS_LSW_EN_ID):
             LSW_Enabled = CAN_Msg.Data[0]
             print('received LSW_EN : '+ str(LSW_Enabled))
+        if(CAN_Msg.ID == MMS_MPPT_ON_ID):
+            MPPT_on = CAN_Msg.Data[0]
+            print('received MPPT_ON : '+ str(MPPT_on))
      
-    if MPPT_Enabled :
-        f32_MPPT_Power = MPPT_PWR
+    if MPPT_on :
+        f32_MPPT_Power += 0.0001*MPPT_PWR #mppt power progressively increasing
+        if f32_MPPT_Power == MPPT_PWR :
+            f32_MPPT_Power = 0
     else:
         f32_MPPT_Power = 0
     

@@ -61,7 +61,6 @@ def CAN_Send_msg(CAN_Msg,bus) :
         GPIO.output(22,True)
         msg = can.Message(arbitration_id=CAN_Msg.ID,data=CAN_Msg.Data,extended_id=True)
         bus.send(msg)
-        print('sending CAN msg')
         GPIO.output(22,False)
         return
 	
@@ -114,6 +113,10 @@ def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox f
         
     if (CAN_Msg.ID == MPPT_MMS_PWR_ID) :
         SData.f32_MPPT_Power = CAN_Msg.Data[0]
+        if SData.f32_MPPT_Power > 0 :
+            SData.MPPT_on = True
+        else:
+            SData.MPPT_on = False
         
     if (CAN_Msg.ID == MPPT_MMS_STAT_ID) :
         if(CAN_Msg.Data[0]):
@@ -142,11 +145,13 @@ def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox f
     return SData
 
 def Log_Data(SData):
-    W_line_file_csv('charge1.csv',[SData.date,SData.time,0,SData.LoadStatusTable[0],0,0,0,0,SData.LoadSPowerTable[0],0,0])
-    W_line_file_csv('charge2.csv',[SData.date,SData.time,1,SData.LoadStatusTable[1],0,0,0,0,SData.LoadSPowerTable[1],0,0])
-    W_line_file_csv('charge3.csv',[SData.date,SData.time,2,SData.LoadStatusTable[2],0,0,0,0,SData.LoadSPowerTable[2],0,0])
-    W_line_file_csv('charge4.csv',[SData.date,SData.time,3,SData.LoadStatusTable[3],0,0,0,0,SData.LoadSPowerTable[3],0,0])
-    W_line_file_csv('charge5.csv',[SData.date,SData.time,4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
+    W_line_file_csv('logs/charge1.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),0,SData.LoadStatusTable[0],0,0,0,0,SData.LoadSPowerTable[0],0,0])
+    W_line_file_csv('logs/charge2.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),1,SData.LoadStatusTable[1],0,0,0,0,SData.LoadSPowerTable[1],0,0])
+    W_line_file_csv('logs/charge3.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),2,SData.LoadStatusTable[2],0,0,0,0,SData.LoadSPowerTable[2],0,0])
+    W_line_file_csv('logs/charge4.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),3,SData.LoadStatusTable[3],0,0,0,0,SData.LoadSPowerTable[3],0,0])
+    W_line_file_csv('logs/charge5.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
+    W_line_file_csv('logs/mppt.csv',   [(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),SData.f32_MPPT_Power,1,SData.MPPT_Enabled])
+    W_line_file_csv('logs/battery.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),str(SData.u8_BatteryLevel),str(abs(SData.f32_BatteryPower)),np.sign(SData.f32_BatteryPower),str(SData.MPPT_Enabled),0,0,0])
     
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]
@@ -157,6 +162,15 @@ def SW_Loads(LoadNum,LoadPos,bus):
 		pos=1
 	Data = [LoadNum,pos]
 	CAN_Msg = c_CAN_Message(MMS_LSW_SWLOADS_ID,MMS_LSW_SWLOADS_LENGTH,Data) #building CAN object
+	CAN_Send_msg(CAN_Msg,bus)#sending message
+	
+def Turn_MPPT(ON,bus):
+	#send can message to MPPT	
+	if(ON):
+		Data = [1]
+	else:
+		Data = [0]
+	CAN_Msg = c_CAN_Message(MMS_MPPT_ON_ID,MMS_MPPT_ON_LENGTH,Data) #building CAN object
 	CAN_Send_msg(CAN_Msg,bus)#sending message
 	
 def Enable_MPPT(b_Enable,bus):
@@ -209,7 +223,7 @@ MMS_MPPT_EN_ID = 		0x1120
 MMS_BMS_EN_ID =		0x1130
 MMS_INV_EN_ID =		0x1140
 MMS_LSW_EN_ID =		0x1150
-MMS_MPPT_MAXPWR_ID =	0x2125
+MMS_MPPT_ON_ID =	0x2125
 MMS_BMS_SWINV_ID =		0x1126
 MMS_LSW_SWLOADS_ID =	0x2156
 BMS_MMS_OCH_ID =		0x1317
@@ -231,7 +245,7 @@ MMS_MPPT_EN_LENGTH = 		1
 MMS_BMS_EN_LENGTH =			1
 MMS_INV_EN_LENGTH =			1
 MMS_LSW_EN_LENGTH =			1
-MMS_MPPT_MAXPWR_LENGTH =		2
+MMS_MPPT_ON_LENGTH =		1
 MMS_BMS_SWINV_LENGTH =		1
 MMS_LSW_SWLOADS_LENGTH =		2
 BMS_MMS_OCH_LENGTH =		1
