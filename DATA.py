@@ -12,7 +12,7 @@ import csv
 ## CLASSES
 ###########################################################################
 
-## CLASS DEFINITION FOR MODULES. Use: check initialisation and communication
+## [UNUSED] CLASS DEFINITION FOR MODULES. Can be used for checking initialisation and communication
 
 class Module_class:
 
@@ -53,7 +53,7 @@ class Load_Balancer_data_class:
                  __reactive_power=0, __apparent_power=0, __power_factor=0, __freq=0):
         self.date = __date
         self.time = __time
-        self.num = __num  ## charge number
+        self.num = __num  ## load number (1 to 5)
         self.type = __type  ## "EDF" or "PV"
         self.current = __current  ## RMS value (A)
         self.voltage = __voltage  ## RMS value (V)
@@ -296,13 +296,13 @@ class BATT_data_class:
 
     # INITIALISATION
 
-    def __init__(self, __date="", __time="", __battery_level=0, __power=0, __sign="", __state="", __overcharge="",
+    def __init__(self, __date="", __time="", __battery_level=0, __power=0, __sign=0, __state="", __overcharge="",
                  __undercharge="", __overtemperature=""):
         self.date = __date
         self.time = __time
         self.battery_level = __battery_level # (%)
         self.power = __power # power input/output
-        self.sign =__sign # "charging" or "discharging"
+        self.sign =__sign # -1:charging or 1:discharging
         self.state = __state # "enabled" or "disabled"
         self.overcharge = __overcharge # "yes" or "no"
         self.undercharge = __undercharge # "yes" or "no"
@@ -439,7 +439,8 @@ def Init_file_mppt_csv(nom_fichier):
 
 def Init_file_batt_csv(nom_fichier):
     with open(nom_fichier, 'w') as fichier:
-        fieldnames = ['date','time', 'battery_level', 'power','sign','state', 'overcharge', 'undercharge',
+        fieldnames = ['date','time', 'battery_level', 'power',''
+                                                              '','state', 'overcharge', 'undercharge',
                       'overtemperature']
         writer = csv.DictWriter(fichier, fieldnames = fieldnames, delimiter = ';')
         writer.writeheader()
@@ -904,7 +905,7 @@ def Calculate_apparent_power(charge1,charge2,charge3,charge4,charge5):
 
     return [charge_EDF,charge_PV]
 
-## ERASE ANY UNWANTED BLANK LINES
+## [NOT WORKING YET] ERASE ANY UNWANTED BLANK LINES. Should be implemented each time a CSV file is open
 def Erase_blanks(nom_fichier):
     input = open(nom_fichier, 'r')
     output = open(nom_fichier, 'w')
@@ -1006,4 +1007,5 @@ def Erase_blanks(nom_fichier):
 #print(line_numbers)
 
 # ERASE BLANK LINES FROM FILES - NOT WORKING YET
-Erase_blanks('charge4.csv')
+
+#Erase_blanks('charge4.csv')
