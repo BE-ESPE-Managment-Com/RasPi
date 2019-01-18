@@ -83,6 +83,11 @@ def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox f
             if SData.LoadStatusTable[i] == 'PV' :
                 SData.f32_LSW_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
                 
+        SData.f32_EDF_Power = 0.0
+        for i in range(0,5):
+            if SData.LoadStatusTable[i] == 'EDF' :
+                SData.f32_EDF_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
+                
     if('PV' not in SData.LoadStatusTable):
         SData.AllLoadsDisconnected = True
     else:
@@ -100,6 +105,11 @@ def CAN_RX_Parser(CAN_Msg,SData): #see CAN BUS FRAME DESCRIPTOR on the dropbox f
         for i in range(0,5):
             if SData.LoadStatusTable[i] == 'PV' :
                 SData.f32_LSW_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
+                
+        SData.f32_EDF_Power = 0.0
+        for i in range(0,5):
+            if SData.LoadStatusTable[i] == 'EDF' :
+                SData.f32_EDF_Power += SData.LoadSPowerTable[i] #add the power consumed by connected loads
     
     if (CAN_Msg.ID == BMS_MMS_SOC_ID) :
         SData.u8_BatteryLevel = CAN_Msg.Data[0]
@@ -170,6 +180,7 @@ def Log_Data(SData):
     W_line_file_csv('logs/charge5.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),4,SData.LoadStatusTable[4],0,0,0,0,SData.LoadSPowerTable[4],0,0])
     W_line_file_csv('logs/mppt.csv',   [(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),SData.f32_MPPT_Power,1,SData.MPPT_Enabled])
     W_line_file_csv('logs/battery.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),str(SData.u8_BatteryLevel),str(abs(SData.f32_BatteryPower)),np.sign(SData.f32_BatteryPower),str(SData.MPPT_Enabled),str(SData.BMS_OCH),str(SData.BMS_UCH),str(SData.BMS_OT)])
+    W_line_file_csv('logs/charge_tot.csv',[(SData.date_time).strftime("%d/%m/%Y"),SData.date_time.strftime("%H:%M:%S"),str("{0:.2f}".format(SData.f32_EDF_Power/24.0)),str("{0:.2f}".format(SData.f32_LSW_Power/24.0)),24,24,0,0,0,0,SData.f32_EDF_Power,SData.f32_LSW_Power])
     
 def SW_Loads(LoadNum,LoadPos,bus):
 	#LoadNum in [0:4]

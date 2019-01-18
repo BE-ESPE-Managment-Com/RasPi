@@ -28,6 +28,13 @@ Load_Spower_data = [11,20,35,18,19]
 Load_Switch_status = [0,0,0,0,0]
 counter = 0
 sign = 0
+increasing = True
+
+#def convertToBinary(n):
+ #   if n>1 :
+  #      convertToBinary(n//2)
+   # return n%2
+
 while(True):
     time.sleep(0.05)
     counter = (counter + 1)
@@ -58,9 +65,14 @@ while(True):
             print('received MPPT_ON : '+ str(MPPT_on))
      
     if MPPT_on :
-        f32_MPPT_Power += 0.0001*MPPT_PWR #mppt power progressively increasing
-        if f32_MPPT_Power == MPPT_PWR :
-            f32_MPPT_Power = 0
+        if increasing :
+            f32_MPPT_Power += 0.0001*MPPT_PWR #mppt power progressively increasing
+            if f32_MPPT_Power == MPPT_PWR :
+                increasing = False
+        else:
+            f32_MPPT_Power -= 0.0001*MPPT_PWR #mppt power progressively increasing
+            if f32_MPPT_Power == 1 :
+                increasing = True
     else:
         f32_MPPT_Power = 0
     
@@ -105,7 +117,7 @@ while(True):
             CAN_Send_msg(myMsg,bus)
 	
         #send MPPT power  
-        myMsg = c_CAN_Message(MPPT_MMS_PWR_ID,MPPT_MMS_PWR_LENGTH,[np.uint8(f32_MPPT_Power)])
+        myMsg = c_CAN_Message(MPPT_MMS_PWR_ID,MPPT_MMS_PWR_LENGTH,[np.uint16(f32_MPPT_Power)])
         CAN_Send_msg(myMsg,bus)
     
         #send send MPPT status

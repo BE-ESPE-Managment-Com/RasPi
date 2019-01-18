@@ -439,9 +439,7 @@ def Init_file_mppt_csv(nom_fichier):
 
 def Init_file_batt_csv(nom_fichier):
     with open(nom_fichier, 'w') as fichier:
-        fieldnames = ['date','time', 'battery_level', 'power',''
-                                                              '','state', 'overcharge', 'undercharge',
-                      'overtemperature']
+        fieldnames = ['date','time', 'battery_level', 'power','sign','state', 'overcharge', 'undercharge', 'overtemperature']
         writer = csv.DictWriter(fichier, fieldnames = fieldnames, delimiter = ';')
         writer.writeheader()
     return

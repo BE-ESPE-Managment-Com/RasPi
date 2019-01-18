@@ -4,9 +4,12 @@ from Project_GUI_V6 import Ui_Form
 from Loads_consumption import Ui_Form1
 import subprocess
 import csv
+from DATA import *
 from MONITORING import *
+import matplotlib.pyplot as plt
+import datetime
 
-data = [1 , 0]
+data_Ld_1 = data_Ld_2 = data_Ld_3 = data_Ld_4 = data_Ld_5 = [1 , 0]
 i = 0
 num_ligne = 0
 battery_level = 0
@@ -28,53 +31,71 @@ class Win_LdStatus(QtGui.QWidget,Ui_Form1):
         self.dialog = Win_Main()
         self.dialog.show()
         self.close()
+        self.timer.stop()
 
      def updateData(self):
         global num_ligne
         global i
-        global data
-        num_ligne += 1
+        global data_Ld_1,data_Ld_2,data_Ld_3,data_Ld_4,data_Ld_5
+        #num_ligne += 1
         i += 1
-
-##        if i == 1:
-##            with open(r'C:\Users\Yahya\Desktop\DataFile2.csv', 'w', newline='') as f:
-##                fieldnames=['act power','react pow']
-##                writer = csv.DictWriter(f, fieldnames = fieldnames, delimiter = ';')
-##                writer.writeheader()
-##                writer.writerow({'act power' : i,'react pow' : i})
-##                f.close()
-##        else :
-##            with open(r'C:\Users\Yahya\Desktop\DataFile2.csv', 'a', newline='') as f:
-##                fieldnames=['act power','react pow']
-##                writer = csv.DictWriter(f, fieldnames = fieldnames, delimiter = ';')
-##                writer.writerow({'act power' : i,'react pow' : i})
-##                f.close()
-
 
 
         #read line number num_ligne
 
-        
-        with open('logs/charge1.csv', "r") as fichier:
-                reader = csv.reader(fichier)
-                rownum = 0
-                for row in reader:
-                    # save header row
-                    if rownum == 0:
-                        header = row
-                    elif (rownum == num_ligne):
-                        colnum = 0
-                        for col in row:
-                            global data
-                            data = col
-                            col = col.split(";")
-                            #print(int(col[0]) + 5,"\n")
-                            colnum += 1
-                    rownum += 1
-        fichier.close()
-        print(data)
-        data = data.split(";")
-        self.ui.Ld_1_AP.setText(data[1])
+        data_Ld_1 = G_line_file_charge_csv('logs/charge1.csv', num_ligne)
+        data_Ld_2 = G_line_file_charge_csv('logs/charge2.csv', num_ligne)
+        data_Ld_3 = G_line_file_charge_csv('logs/charge3.csv', num_ligne)
+        data_Ld_4 = G_line_file_charge_csv('logs/charge4.csv', num_ligne)
+        data_Ld_5 = G_line_file_charge_csv('logs/charge5.csv', num_ligne)
+
+        self.ui.Ld_1_AP.setText(str(data_Ld_1.active_power))
+        self.ui.Ld_2_AP.setText(str(data_Ld_2.active_power))
+        self.ui.Ld_3_AP.setText(str(data_Ld_3.active_power))
+        self.ui.Ld_4_AP.setText(str(data_Ld_4.active_power))
+        self.ui.Ld_5_AP.setText(str(data_Ld_5.active_power))
+
+        self.ui.Ld_1_RP.setText(str(data_Ld_1.reactive_power))
+        self.ui.Ld_2_RP.setText(str(data_Ld_2.reactive_power))
+        self.ui.Ld_3_RP.setText(str(data_Ld_3.reactive_power))
+        self.ui.Ld_4_RP.setText(str(data_Ld_4.reactive_power))
+        self.ui.Ld_5_RP.setText(str(data_Ld_5.reactive_power))
+
+        self.ui.Ld_1_AppP.setText(str(data_Ld_1.apparent_power))
+        self.ui.Ld_2_AppP.setText(str(data_Ld_2.apparent_power))
+        self.ui.Ld_3_AppP.setText(str(data_Ld_3.apparent_power))
+        self.ui.Ld_4_AppP.setText(str(data_Ld_4.apparent_power))
+        self.ui.Ld_5_AppP.setText(str(data_Ld_5.apparent_power))
+
+        self.ui.Ld_1_rmsCurrent.setText(str(data_Ld_1.current))
+        self.ui.Ld_2_rmsCurrent.setText(str(data_Ld_2.current))
+        self.ui.Ld_3_rmsCurrent.setText(str(data_Ld_3.current))
+        self.ui.Ld_4_rmsCurrent.setText(str(data_Ld_4.current))
+        self.ui.Ld_5_rmsCurrent.setText(str(data_Ld_5.current))
+
+        self.ui.Ld_1_rmsVoltage.setText(str(data_Ld_1.voltage))
+        self.ui.Ld_2_rmsVoltage.setText(str(data_Ld_2.voltage))
+        self.ui.Ld_3_rmsVoltage.setText(str(data_Ld_3.voltage))
+        self.ui.Ld_4_rmsVoltage.setText(str(data_Ld_4.voltage))
+        self.ui.Ld_5_rmsVoltage.setText(str(data_Ld_5.voltage))
+
+        self.ui.Ld_1_PwrFact.setText(str(data_Ld_1.power_factor))
+        self.ui.Ld_2_PwrFact.setText(str(data_Ld_2.power_factor))
+        self.ui.Ld_3_PwrFact.setText(str(data_Ld_3.power_factor))
+        self.ui.Ld_4_PwrFact.setText(str(data_Ld_4.power_factor))
+        self.ui.Ld_5_PwrFact.setText(str(data_Ld_5.power_factor))
+
+        self.ui.Ld_1_Freq.setText(str(data_Ld_1.freq))
+        self.ui.Ld_2_Freq.setText(str(data_Ld_2.freq))
+        self.ui.Ld_3_Freq.setText(str(data_Ld_3.freq))
+        self.ui.Ld_4_Freq.setText(str(data_Ld_4.freq))
+        self.ui.Ld_5_Freq.setText(str(data_Ld_5.freq))
+
+        self.ui.Ld_1_PwrSrc_4.setText(str(data_Ld_1.type))
+        self.ui.Ld_2_PwrSrc_4.setText(str(data_Ld_2.type))
+        self.ui.Ld_3_PwrSrc_4.setText(str(data_Ld_3.type))
+        self.ui.Ld_4_PwrSrc_4.setText(str(data_Ld_4.type))
+        self.ui.Ld_5_PwrSrc_4.setText(str(data_Ld_5.type))
 
         
 
@@ -88,57 +109,42 @@ class Win_Main(QtGui.QMainWindow):
 
         self.ui=Ui_Form()
         self.ui.setupUi(self)
+        self.timer = QtCore.QTimer()
 
         #RUN "start new eval" button
         self.ui.View_Button.clicked.connect(self.View_Loads_Status_Window)
+
         
 
         #show plotter when click on today button
         self.ui.Today_Button.clicked.connect(lambda:self.run('Plot_Prod_Graph.py'))
+
+        self.ui.week_Button.clicked.connect(self.plot_week_prod)
+
+        self.ui.Month_Button.clicked.connect(self.plot_month_prod)
         
-        self.timer = QtCore.QTimer()
+        
         self.timer.timeout.connect(self.updateData)
         self.timer.start(1000) # 1s
-
+        
         self.timer2 = QtCore.QTimer()
         self.timer2.timeout.connect(self.Monitor)
         self.timer2.start(5) # 5ms
-
+        
     def Monitor(self):
         global SData, bus, CAN_msg_queue, counter, num_ligne 
         SData, bus, CAN_msg_queue, counter,num_ligne = Monitoring(SData,bus,CAN_msg_queue,counter,num_ligne)
 
-    def updateData(self):
-        global num_ligne
-        global i
-        global data
-        #num_ligne += 1
-        i += 1
 
-        with open('logs/battery.csv', "r") as fichier:
-            reader = csv.reader(fichier)
-            rownum = 0
-            for row in reader:
-                # save header row
-                if rownum == 0:
-                    header = row
-                elif (rownum == num_ligne):
-                    colnum = 0
-                    for col in row:
-                        global data
-                        data = col
-                        col = col.split(";")
-                        #print(int(col[0]) + 5,"\n")
-                        colnum += 1
-                rownum += 1
-        fichier.close()
-        print(data)
-        data = data.split(";")
+    def updateData(self):
+        global num_ligne, data_Battery
+        #num_ligne += 1
+
+        data_Battery = G_line_file_battery_csv('logs/battery.csv', num_ligne)
+        batt_power_sign = data_Battery.sign
         
-        battery_level = data[2]
-        batt_power_sign = data[4]
           #update battery level
-        self.ui.Battery_level.setProperty("value", battery_level)
+        self.ui.Battery_level.setProperty("value", data_Battery.battery_level)
         
         if int(batt_power_sign) == -1 :
              self.ui.batt_discharg.hide()
@@ -151,13 +157,76 @@ class Win_Main(QtGui.QMainWindow):
              self.ui.batt_charg.hide()
 
 
+        data_mppt = G_line_file_mppt_csv('logs/mppt.csv', num_ligne)
+
+                  #update MPPT power
+        self.ui.Prod_power.setText(str(data_mppt.power))
+        self.ui.Prod_current.setText(str("{0:.2f}".format(float(data_mppt.power)/24.0)))
+
+                  #update power source ( EDF / PV )
+        data_Ld_1 = G_line_file_charge_csv('logs/charge1.csv', num_ligne)
+        data_Ld_2 = G_line_file_charge_csv('logs/charge2.csv', num_ligne)
+        data_Ld_3 = G_line_file_charge_csv('logs/charge3.csv', num_ligne)
+        data_Ld_4 = G_line_file_charge_csv('logs/charge4.csv', num_ligne)
+        data_Ld_5 = G_line_file_charge_csv('logs/charge5.csv', num_ligne)
+
+        self.ui.state_ld_1.setText(str(data_Ld_1.type))
+        self.ui.state_ld_2.setText(str(data_Ld_2.type))
+        self.ui.state_ld_3.setText(str(data_Ld_3.type))
+        self.ui.state_ld_4.setText(str(data_Ld_4.type))
+        self.ui.state_ld_5.setText(str(data_Ld_5.type))
+        
+                  #update total consumption
+        data_Ld_tot = G_line_file_chargetot_csv('logs/charge_tot.csv', num_ligne)
+
+        self.ui.Cons_voltage.setText(str(data_Ld_tot.voltage_PV))
+        self.ui.Cons_current.setText(str(data_Ld_tot.current_PV))
+        self.ui.Cons_power.setText(str(data_Ld_tot.apparent_power_PV))
+
+
+
+
     def run(self, path):
-        subprocess.call(['pythonw',path])
+        subprocess.call([sys.executable,path])
 
     def View_Loads_Status_Window(self):
         self.dialog = Win_LdStatus()
         self.dialog.show()
         self.close()
+        self.timer.stop()
+
+#NOTE: values need to be adjusted later        
+    def plot_week_prod(self):
+         global num_ligne
+         prod = []
+         time = []
+         data = G_line_file_charge_csv('logs/charge1.csv', num_ligne - 10)
+         date_today = data.date
+         date_today = date_today.split("/")
+         time_now = data.time
+         time_now = time_now.split(":")
+         start_date = datetime.datetime(int(date_today[2]),int(date_today[1]),int(date_today[0]),int(time_now[0]), int(time_now[1]))
+         lines_numbers = G_linenumber('logs/charge1.csv',date_inf,time_inf,date_sup,time_sup)
+         
+         for i in range( num_ligne - 10 , num_ligne ):
+              data_Ld_1 = G_line_file_charge_csv('logs/charge1.csv', i)
+              prod.append(data_Ld_1.apparent_power)
+              #time.append(data_Ld_1.time)
+         time = [start_date + datetime.timedelta(minutes = i) for i in range(len(prod))]
+         plt.plot(time, prod)
+         plt.gcf().autofmt_xdate()
+         plt.show()
+
+
+    def plot_month_prod(self):
+         global num_ligne
+         prod = []
+         time = []
+         for i in range( num_ligne - 10 , num_ligne , 3600 ):
+              data_Ld_1 = G_line_file_charge_csv('logs/charge1.csv', i)
+              prod.append(data_Ld_1.apparent_power)
+              time.append(data_Ld_1.time)
+         plt.plot(time, prod)
 
 
     def centre(self):

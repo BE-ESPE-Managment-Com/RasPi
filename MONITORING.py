@@ -47,6 +47,7 @@ class c_System_Data :
 		self.AllLoadsDisconnected = True #verification based on LSW module info (load status)
 		self.f32_MPPT_Power = 0.0 #MPPT power in VA. 
 		self.f32_LSW_Power = 0.0 #Sum of the power consumed by all the loads connected
+		self.f32_EDF_Power = 0.0 #for logging
 		self.LoadStatusTable = ['EDF','EDF','EDF','EDF','EDF'] #EDF or PV
 		self.LoadSPowerTable = [0.0,0.0,0.0,0.0,0.0] #power for each load (VA)
 		self.MPPT_SW = ON #power switch between the battery and the inverter, controlled by the MPPT module. Not used yet (TODO : has to be added in case of emergency)
@@ -166,7 +167,7 @@ def b_InitSystem(SData):
 def u8_Load_Choice_Algorithm(ConnectTo, f32_power_batt, LoadStatusTable, LoadSPowerTable):
 	#get load power data
         Matching_load_num = 'FF'
-        Matching_load_power_diffence = abs(f32_power_batt) #if no load can get reduce the current power difference, nothing will happen
+        Matching_load_power_diffence = 1000
         for i in range(0,5):
             #print(i)
             Load_power_difference = abs(LoadSPowerTable[i]-f32_power_batt)
@@ -228,6 +229,9 @@ def Init_monitoring():
     Init_file_charge_csv('logs/charge5.csv')
     Init_file_mppt_csv('logs/mppt.csv')
     
+    Log_Data(SData) #store data in log files
+    num_ligne += 1 #for HMI to read
+        
     print("Initialising system...")
     InitErr,bus,CAN_msg_queue,SData = b_InitSystem(SData)
     if(InitErr):
@@ -259,7 +263,7 @@ def Monitoring(SData,bus,CAN_msg_queue,counter,num_ligne):
        
         
         Log_Data(SData) #store data in log files
-        num_ligne += 1
+        num_ligne += 1 #for HMI to read csv files
         #test battery level
         if(SData.u8_BatteryLevel > MAX_BATTERY_LEVEL):
             SData.s_Battery_State = "HIGH"
