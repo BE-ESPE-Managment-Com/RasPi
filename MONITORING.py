@@ -166,7 +166,7 @@ def b_InitSystem(SData):
 def u8_Load_Choice_Algorithm(ConnectTo, f32_power_batt, LoadStatusTable, LoadSPowerTable):
 	#get load power data
         Matching_load_num = 'FF'
-        Matching_load_power_diffence = 1000
+        Matching_load_power_diffence = abs(f32_power_batt) #if no load can get reduce the current power difference, nothing will happen
         for i in range(0,5):
             #print(i)
             Load_power_difference = abs(LoadSPowerTable[i]-f32_power_batt)
